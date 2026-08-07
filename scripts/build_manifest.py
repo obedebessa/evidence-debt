@@ -4,11 +4,11 @@
 from __future__ import annotations
 
 import hashlib
+import subprocess
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EXCLUDED_PARTS = {".git", "__pycache__", ".pytest_cache", "tmp"}
 EXCLUDED_SUFFIXES = {".aux", ".bbl", ".blg", ".log", ".out", ".xdv"}
 
 
@@ -17,7 +17,6 @@ def included(path: Path) -> bool:
     return (
         path.is_file()
         and path.name != "MANIFEST.sha256"
-        and not any(part in EXCLUDED_PARTS for part in rel.parts)
         and path.suffix not in EXCLUDED_SUFFIXES
         and path.name != "main.pdf"
         and path.name != "evidence-debt-paper.pdf"
@@ -26,7 +25,15 @@ def included(path: Path) -> bool:
 
 def main() -> None:
     lines = []
-    for path in sorted(p for p in ROOT.rglob("*") if included(p)):
+    proc = subprocess.run(
+        ["git", "ls-files", "-co", "--exclude-standard"],
+        cwd=ROOT,
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+    candidates = (ROOT / line for line in proc.stdout.splitlines())
+    for path in sorted(path for path in candidates if included(path)):
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         lines.append(f"{digest}  {path.relative_to(ROOT).as_posix()}")
     (ROOT / "MANIFEST.sha256").write_text("\n".join(lines) + "\n", encoding="utf-8")

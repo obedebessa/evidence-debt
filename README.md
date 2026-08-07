@@ -10,17 +10,19 @@ Reproducibility package for the manuscript:
 > Obede Bessa Rocha da Silva — Independent Researcher
 
 The package contains the complete LaTeX source, a dependency-free simulation,
-canonical synthetic outputs, a frozen public-repository census, programmatically
-generated tables, and a field protocol. Version 1.1.0 adds the bounded Argo CD
-observation and an explicit economic-accounting chain.
+canonical synthetic outputs, a frozen public-repository observation,
+programmatically generated tables, and a field protocol. Version 1.2.0 replaces
+the mutable-update sample with four `mergedAt` age cohorts, resolves issue
+tokens against GitHub, adds authorship/change-type strata and a seeded manual
+audit, and makes the artifact location explicit in the manuscript.
 
 ## Evidence boundary
 
 The artifact establishes that the proposed constructs are computable and
-discriminating in a seeded synthetic environment. The Argo CD census establishes
-only that a declared intent-link deficit occurs in public repository evidence. It
-does **not** report production reconstruction costs, an industrial case study, or
-external replication.
+discriminating in a seeded synthetic environment. The Argo CD observation
+establishes only that missing external issue linkage occurs under a declared
+repository schema. It does **not** establish inadequate intent documentation,
+temporal decay, production reconstruction cost, or industrial prevalence.
 
 ## Repository map
 
@@ -29,7 +31,7 @@ external replication.
 | `main.tex`, `sections/`, `figs/`, `refs.bib` | Complete manuscript source |
 | `code/experiment.py` | Synthetic generator, degradation arms, reconstruction, and aggregation |
 | `data/` | Canonical raw/aggregated results and generated LaTeX tables |
-| `empirical/` | Frozen Argo CD sample, generated counts, and collector |
+| `empirical/` | Frozen Argo CD cohorts, strata, manual audit, generated counts, and collector |
 | `reviewer2-response.md` | Adversarial review and point-by-point disposition |
 | `scripts/verify_artifact.py` | Re-execution and deterministic-result verification |
 | `output/pdf/` | Verified compiled manuscript |
@@ -56,8 +58,9 @@ python3 scripts/verify_artifact.py
 ```
 
 The verifier preserves the canonical outputs in memory, re-executes the study,
-and compares all non-timing fields plus the generated table. It also checks that
-the frozen repository snapshot, CSV summary, and LaTeX macros agree. Live
+and compares all non-timing fields plus the generated table. It also checks the
+frozen repository cohorts, strata, grammar tests, manual audit, CSVs, and LaTeX
+macros. Live
 recollection requires `gh auth login` and is intentionally separate because public
 repository state can change.
 
@@ -81,9 +84,9 @@ tectonic -X compile main.tex
 ## Citation and release
 
 Citation metadata is provided in `CITATION.cff`; Zenodo deposit metadata is in
-`.zenodo.json`. Version 1.1.0 is archived at
-<https://doi.org/10.5281/zenodo.21842021>; the version-independent concept DOI is
-<https://doi.org/10.5281/zenodo.21841440>.
+`.zenodo.json`. The version-independent concept DOI is
+<https://doi.org/10.5281/zenodo.21841440>; version 1.2.0 is archived at
+<https://doi.org/10.5281/zenodo.21843147>.
 
 ## License
 

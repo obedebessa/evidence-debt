@@ -1,0 +1,51 @@
+number,manual_external_issue_reference,adjudication_notes
+23857,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+23957,0,Only a pull-request reference is present; no token resolves to an Issue.
+23974,0,No title/body token resolves to an Issue.
+24012,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+24066,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+24087,0,Template placeholders are not issue references.
+24088,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+24090,0,Template placeholders are not issue references.
+24097,0,Template placeholders are not issue references.
+24102,0,Only a pull-request reference is present; no token resolves to an Issue.
+24103,0,Only a pull-request reference is present; no token resolves to an Issue.
+24124,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+24127,0,Template placeholders are not issue references.
+14234,0,Template placeholders are not issue references.
+14805,0,Only a pull-request reference is present; no token resolves to an Issue.
+14845,0,Template placeholders are not issue references.
+14852,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+14890,0,Only a pull-request reference is present; no token resolves to an Issue.
+14933,0,No title/body token resolves to an Issue.
+14934,0,Only a pull-request reference is present; no token resolves to an Issue.
+14955,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+14958,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+14959,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+14992,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+14995,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+6869,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+6872,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+6877,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+6885,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+6887,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+6888,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+6890,0,Template placeholders are not issue references.
+6901,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+6911,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+6913,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+6949,0,No title/body token resolves to an Issue.
+6972,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+28249,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+28299,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+28365,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+28668,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+29025,0,Template placeholders are not issue references.
+29034,0,No title/body token resolves to an Issue.
+29036,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+29038,0,No title/body token resolves to an Issue.
+29043,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+29044,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+29049,0,Only pull-request references are present; no token resolves to an Issue.
+29078,1,At least one title/body token resolves to a GitHub Issue under the declared grammar.
+29094,0,Only a pull-request reference is present; no token resolves to an Issue.

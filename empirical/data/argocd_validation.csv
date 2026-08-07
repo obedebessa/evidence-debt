@@ -1,0 +1,9 @@
+metric,value
+sample_size,50
+true_positive,29
+true_negative,21
+false_positive,0
+false_negative,0
+precision,1.000
+recall,1.000
+agreement,1.000

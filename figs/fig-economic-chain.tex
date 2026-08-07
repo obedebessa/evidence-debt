@@ -1,6 +1,6 @@
 % Accounting bridge from evidence deficit to financial exposure (single column)
 \begin{tikzpicture}[node distance=2.5mm]
-  \node[brok, minimum width=35mm] (deficit)
+  \node[brok, draw=black, fill=white, line width=0.8pt, minimum width=35mm] (deficit)
     {evidence deficit\\{\smlbl missing node, key, or link}};
   \node[stage, below=of deficit, minimum width=35mm] (recon)
     {reconstruction demand\\{\smlbl contingency $q$ activates the gap}};
@@ -8,13 +8,15 @@
     {engineering effort\\{\smlbl person-hours $+$ compute $+$ delay}};
   \node[evid, below=of hours, minimum width=35mm] (cost)
     {operational / audit cost\\{\smlbl declared rates and delay costs}};
-  \node[brok, below=of cost, minimum width=35mm] (exposure)
+  \node[brok, draw=black, fill=black!10, line width=0.8pt,
+    double=black, double distance=0.45pt, below=of cost, minimum width=35mm] (exposure)
     {financial exposure\\{\smlbl workload weight $w_q$; loss penalty $\pi_q$}};
 
   \draw[flow] (deficit) -- (recon);
   \draw[flow] (recon) -- node[right,lbl]{measured ERC} (hours);
   \draw[flow] (hours) -- node[right,lbl]{accounting map} (cost);
   \draw[flow] (cost) -- node[right,lbl]{frequency $\times$ consequence} (exposure);
-  \draw[bflow] (recon.west) to[out=190,in=170]
+  \draw[-{Triangle[open,length=1.8mm]}, black, densely dotted, very thick]
+    (recon.west) to[out=190,in=170]
     node[left,lbl,align=right]{irrecoverable\\write-off} (exposure.west);
 \end{tikzpicture}
