@@ -30,6 +30,9 @@ production magnitudes, an industrial case study, or external replication.
 | `reviewer2-response.md` | Adversarial review and point-by-point disposition |
 | `scripts/verify_artifact.py` | Re-execution and deterministic-result verification |
 | `output/pdf/` | Verified compiled manuscript |
+| `originais/archive_3/` | Unmodified incoming PDF, source ZIP, and original review memo (local only) |
+| `build/latex/` | Local LaTeX intermediates (local only) |
+| `qa/renders/` | Page renders and contact sheets used for visual QA (local only) |
 
 ## Reproduce the study
 
