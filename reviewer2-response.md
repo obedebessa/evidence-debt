@@ -58,4 +58,36 @@
 
 ## 3. Residual state
 
-The revised manuscript compiles to 18 two-column pages with zero undefined references, zero overfull boxes ≥10pt, no dead or missing bibliography entries, and a results table produced by the same program that produced the results. The simulation now contains one genuinely falsifiable headline test (passed), quantified removal arms for every design-entailed behavior, both irrecoverability constructs, invariant effort, and an end-to-end ED computation. What no revision can supply is field data: the reviewer's closing suggestion — execute Instrument 1 of §VIII against one open-source organization's public toolchain — is the right next step and is exactly what the field protocol was written to enable.
+The revised manuscript compiles to 18 two-column pages with zero undefined references, zero overfull boxes ≥10pt, no dead or missing bibliography entries, and a results table produced by the same program that produced the results. The simulation now contains one genuinely falsifiable headline test (passed), quantified removal arms for every design-entailed behavior, both irrecoverability constructs, invariant effort, and an end-to-end ED computation. At that review stage, field data were absent. Versions 1.1.0 and 1.2.0 subsequently added the bounded Argo CD observation documented below; it remains an occurrence check rather than a cost measurement.
+
+---
+
+## 4. Follow-up methodological review (v1.2.0)
+
+The subsequent review accepted the external occurrence check but identified four
+remaining threats: calling missing issue linkage an intent deficit; selecting by
+mutable `updatedAt`; hiding bot/change-type composition; and leaving the collector
+grammar and artifact location implicit. Version 1.2.0 addresses each point:
+
+1. Every external claim now says **missing external issue linkage under the
+   declared repository schema** and explicitly disclaims inadequate intent
+   documentation, decay, debt magnitude, and reconstruction cost.
+2. The observation now uses four disjoint `mergedAt` cohorts (50 recent and 50
+   nearest each of one, three, and five years), after retrieving complete declared
+   date windows. Cohort differences are treated as cross-sectional composition,
+   not link decay.
+3. Mutually exclusive headline categories replace nested absence rows. Separate
+   age, human/bot, and feature/bug, maintenance/dependency, and documentation
+   strata are frozen in `empirical/data/argocd_strata.csv` and reported in the
+   manuscript.
+4. The collector grammar is exact and executable: `#123`, `owner/repo#123`, and
+   full GitHub issue URLs in title/body are candidates; targets must resolve to an
+   Issue; PRs, missing targets, bare numbers, Jira keys, comments, PR URLs, and
+   placeholders are excluded. Eight offline unit tests cover the boundary cases.
+5. A seeded 50-PR manual audit (single reviewer, unblinded) produced TP=29, TN=21,
+   FP=0, FN=0, precision=1.000, and recall=1.000 for the declared grammar. This is
+   implementation validation, not construct validation.
+6. The abstract is 220 words and restores the effort-before-visible-failure result;
+   the economic chain uses monochrome-safe line/fill encodings; and a dedicated
+   Data and Code Availability section states the Zenodo concept DOI, release tag,
+   repository URL, and SHA-256 manifest.

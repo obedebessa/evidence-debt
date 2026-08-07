@@ -1,0 +1,10 @@
+dimension,stratum,total,without_external_issue_reference,share_without_external_issue_reference
+age cohort,recent,50,30,60.0
+age cohort,about_1y,50,28,56.0
+age cohort,about_3y,50,26,52.0
+age cohort,about_5y,50,21,42.0
+authorship,human-authored,125,65,52.0
+authorship,bot-authored,75,40,53.3
+change type,feature/bug,79,29,36.7
+change type,dependency/maintenance,88,48,54.5
+change type,documentation,33,28,84.8

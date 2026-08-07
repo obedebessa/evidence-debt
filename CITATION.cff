@@ -2,9 +2,9 @@ cff-version: 1.2.0
 message: "If you use this artifact, please cite it as below."
 type: software
 title: "Evidence Debt: Reproducibility Package"
-version: 1.1.0
+version: 1.2.0
 date-released: 2026-08-07
-doi: "10.5281/zenodo.21842021"
+doi: "10.5281/zenodo.21843147"
 authors:
   - family-names: "Bessa Rocha da Silva"
     given-names: "Obede"
@@ -14,9 +14,9 @@ repository-code: "https://github.com/obedebessa/evidence-debt"
 url: "https://github.com/obedebessa/evidence-debt"
 abstract: >
   Manuscript source, deterministic simulation code, canonical synthetic data,
-  a frozen public-repository census, programmatically generated tables, and a
-  field-study protocol for measuring accumulated reconstruction cost caused by
-  missing operational evidence.
+  a frozen age-stratified Argo CD observation, a seeded manual collector audit,
+  programmatically generated tables, and a field-study protocol for measuring
+  accumulated reconstruction cost caused by missing operational evidence.
 keywords:
   - "evidence debt"
   - "operational evidence"

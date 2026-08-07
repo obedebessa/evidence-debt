@@ -9,52 +9,102 @@ protocol---still not executed---at implementable detail. Design follows standard
 guidance for case study and measurement research in software
 engineering~\cite{runeson2009,wohlin2012}.
 
-\subsection{Bounded Public-Repository Census (Executed)}
-We executed a read-only census of the public
+\subsection{Age-Stratified Repository Observation (Executed)}
+We executed a read-only observation of the public
 \href{https://github.com/argoproj/argo-cd}{\texttt{argoproj/argo-cd}} repository,
-frozen at 2026-08-07 15:30 UTC. The sample is the 200 most recently updated merged
-pull requests before the cutoff and the 30 most recent published, non-draft
-releases. Under a deliberately narrow repository schema $\Sch_{\mathrm{repo}}$,
-intent evidence is (i)~a machine-resolvable closing-issue link or (ii)~an explicit
-issue reference in the PR title/body; authorization evidence is an
-\texttt{APPROVED} GitHub review object; and release lineage is an explicit PR or
-compare reference in release notes. These are machine-testable public proxies, not
-the six-interrogative schema and not a judgment about the project's internal
-processes.
+frozen at 2026-08-07 15:30 UTC. Selection uses \texttt{mergedAt}, not mutable
+\texttt{updatedAt}. Four disjoint cohorts contain 50 PRs each: the latest merges
+before the cutoff and the merges nearest target ages of one, three, and five years.
+The collector retrieves complete, declared date windows before sorting, so search
+result order does not choose the sample. We also take the 30 most recent published,
+non-draft releases. This is a cross-sectional age design: cohort differences may
+reflect changing contribution mix or project practice and cannot establish that a
+link disappeared over time.
+
+Under the narrow repository schema $\Sch_{\mathrm{repo}}$, external issue linkage
+is (i)~a GitHub \texttt{closingIssuesReferences} relation or (ii)~a title/body token
+of the form \texttt{\#123}, \texttt{owner/repo\#123}, or a full GitHub
+\texttt{/issues/123} URL that resolves through the API to an Issue. Closed issues
+count; PR objects, unresolved/deleted targets, bare numbers, Jira keys, PR URLs,
+template placeholders, and references found only in comments do not. An
+\texttt{APPROVED} review object is only a \emph{review-record presence control},
+not proof of organizational authorization. Release-lineage presence is an explicit
+PR or compare reference in release notes. The executable grammar and its unit tests
+are released with the artifact.
 
 \input{empirical/argocd_macros.tex}
 \begin{table}[t]
 \centering
-\caption{Public Argo CD evidence census at the frozen cutoff}
+\caption{Public Argo CD observations at the frozen cutoff}
 \label{tab:argocd-census}
-\begin{tabular}{@{}lrr@{}}
+\begin{tabular}{@{}p{0.58\columnwidth}rr@{}}
 \toprule
-Observable absence & Count & Share \\
+Evidence observed & Count & Share \\
 \midrule
-No closing-issue link & \ArgoNoIssue/\ArgoPRTotal & \ArgoNoIssuePct \\
-No closing link or explicit issue reference & \ArgoNoIssueReference/\ArgoPRTotal & \ArgoNoIssueReferencePct \\
-No approved-review object & \ArgoNoApproval/\ArgoPRTotal & \ArgoNoApprovalPct \\
-Release without PR/compare reference & \ArgoNoReleaseLineage/\ArgoReleaseTotal & \ArgoNoReleaseLineagePct \\
+Closing-issue link present & \ArgoClosingPresent/\ArgoPRTotal & \ArgoClosingPresentPct \\
+Explicit non-closing issue reference only & \ArgoExplicitOnly/\ArgoPRTotal & \ArgoExplicitOnlyPct \\
+No external issue reference & \ArgoNoExternal/\ArgoPRTotal & \ArgoNoExternalPct \\
+$\geq 1$ approved-review record & \ArgoApproved/\ArgoPRTotal & \ArgoApprovedPct \\
+Release with PR/compare reference & \ArgoReleaseLineage/\ArgoReleaseTotal & \ArgoReleaseLineagePct \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\Cref{tab:argocd-census} shows a class-specific result: \ArgoNoIssue\ of
-\ArgoPRTotal\ merged PRs had no machine-resolvable closing-issue link, and
-\ArgoNoIssueReference\ still had neither that link nor an explicit issue reference.
-By contrast, every sampled PR retained an approved-review object and every sampled
-release retained an explicit change reference. The negative controls matter: the
-analyzer does not merely label all public evidence incomplete. These observations
-are not presented as evidence-debt measurements, but as empirical evidence that the
-deficit classes defined in \cref{def:deficit} naturally occur in a real repository.
+The first three rows of \cref{tab:argocd-census} are mutually exclusive:
+\ArgoClosingPresent\ PRs retain a closing link, \ArgoExplicitOnly\ retain only a
+resolved non-closing issue reference, and \ArgoNoExternal\ (\ArgoNoExternalPct)
+retain neither under $\Sch_{\mathrm{repo}}$. The presence controls are high but not
+artificially perfect: \ArgoApproved/\ArgoPRTotal\ PRs have an approved-review record,
+and \ArgoReleaseLineage/\ArgoReleaseTotal\ releases have a change reference. Thus
+the collector does not simply label every public evidence channel incomplete.
 
-The census has strict limits. A self-contained PR may document intent adequately;
-an issue may exist in a private or external tracker; approval may be encoded outside
-GitHub; and present API state cannot prove that a link was once present and later
-lost. The sample is recent and purposive, not random. It therefore supports
-\emph{occurrence}, not prevalence, organizational negligence, reconstruction cost,
-or financial magnitude. The collector, frozen minimal data, and generated counts
-are released in \texttt{empirical/}.
+\begin{table}[t]
+\centering
+\caption{Missing external issue reference by descriptive stratum}
+\label{tab:argocd-strata}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Stratum & Missing/total & Share \\
+\midrule
+Recent & \ArgoRecentNoExternal/\ArgoRecentTotal & \ArgoRecentNoExternalPct \\
+$\approx 1$ year & \ArgoOneYearNoExternal/\ArgoOneYearTotal & \ArgoOneYearNoExternalPct \\
+$\approx 3$ years & \ArgoThreeYearNoExternal/\ArgoThreeYearTotal & \ArgoThreeYearNoExternalPct \\
+$\approx 5$ years & \ArgoFiveYearNoExternal/\ArgoFiveYearTotal & \ArgoFiveYearNoExternalPct \\
+Human-authored & \ArgoHumanNoExternal/\ArgoHumanTotal & \ArgoHumanNoExternalPct \\
+Bot-authored & \ArgoBotNoExternal/\ArgoBotTotal & \ArgoBotNoExternalPct \\
+Feature/bug & \ArgoFeatureBugNoExternal/\ArgoFeatureBugTotal & \ArgoFeatureBugNoExternalPct \\
+Dependency/maintenance & \ArgoMaintenanceNoExternal/\ArgoMaintenanceTotal & \ArgoMaintenanceNoExternalPct \\
+Documentation & \ArgoDocumentationNoExternal/\ArgoDocumentationTotal & \ArgoDocumentationNoExternalPct \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\Cref{tab:argocd-strata} exposes composition rather than hiding it. Bot- and
+human-authored PRs have similar missing-link shares, whereas feature/bug PRs carry
+more linkage than maintenance or documentation PRs. The age-cohort gradient runs
+opposite a simple decay story: older cohorts retain more external issue linkage.
+Because project norms and PR mix differ across eras, this is a descriptive warning
+against interpreting the observation as link decay, not evidence against the
+model's within-record survival mechanism.
+
+\input{empirical/argocd_validation_macros.tex}
+A single-reviewer, unblinded audit of \ArgoAuditN\ PRs was sampled within cohorts
+using seed 20260807. Against manual title/body and resolved-target coding, the
+collector produced TP~=~\ArgoAuditTP, TN~=~\ArgoAuditTN, FP~=~\ArgoAuditFP, and
+FN~=~\ArgoAuditFN\ (precision~=~\ArgoAuditPrecision; recall~=~\ArgoAuditRecall).
+This validates implementation of the declared linkage grammar on the audit sample;
+it does not validate issue linkage as a measure of intent quality.
+
+The observation has strict limits. A self-contained PR may document intent
+adequately; an issue may exist in a private or non-GitHub tracker; a dependency
+changelog may contribute a resolved link without documenting Argo CD intent;
+approval may be encoded outside GitHub; and present API state cannot prove that a
+link was once present and later lost. The sample is stratified and purposive, not a
+prevalence sample. It establishes the occurrence of missing external issue linkage
+under $\Sch_{\mathrm{repo}}$; it does not establish inadequate intent
+documentation, temporal decay, organizational negligence, evidence-debt magnitude,
+reconstruction cost, or financial exposure. Frozen data, classifications, audit
+coding, and generated counts are released in \texttt{empirical/}.
 
 \subsection{Instrument 1: Deficit Census}
 A static analyzer over an organization's stores (forge, ITSM, CI, registry, CD,
