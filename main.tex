@@ -1,0 +1,175 @@
+% =====================================================================
+% Evidence Debt: Measuring the Accumulated Cost of Missing Operational
+% Evidence in Cloud-Native Systems
+%
+% Journal-length manuscript, IEEE-Transactions-style formatting on the
+% base article class (content transplants directly into IEEEtran /
+% llncs / elsarticle for submission).
+% =====================================================================
+\documentclass[10pt,twocolumn]{article}
+\PassOptionsToPackage{hyphens}{url}
+
+% ------------------------- fonts and layout --------------------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{mathptmx}
+\usepackage[scaled=0.90]{helvet}
+\usepackage{courier}
+\usepackage[letterpaper,left=0.66in,right=0.66in,top=0.73in,bottom=0.95in]{geometry}
+\setlength{\columnsep}{0.25in}
+\usepackage{microtype}
+
+% ------------------------- packages ----------------------------------
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{threeparttable}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric,fit,backgrounds,decorations.pathreplacing,matrix}
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\pgfplotsset{compat=1.17}
+\definecolor{serA}{RGB}{0,84,147}     % deep blue
+\definecolor{serB}{RGB}{202,108,2}    % orange
+\definecolor{serC}{RGB}{0,122,83}     % green
+\definecolor{serD}{RGB}{150,30,90}    % magenta
+\pgfplotsset{
+  edplot/.style={
+    width=0.52\textwidth, height=4.35cm,
+    tick label style={font=\fontsize{7}{8}\selectfont},
+    label style={font=\fontsize{7.4}{8.4}\selectfont},
+    title style={font=\fontsize{7.6}{8.6}\selectfont},
+    legend style={font=\fontsize{6.6}{7.6}\selectfont, draw=black!40,
+                  fill=white, fill opacity=0.9, text opacity=1},
+    grid=major, grid style={black!12},
+    xlabel={degradation level $p$ (\%)},
+  }
+}
+\usepackage{balance}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+\usepackage[capitalize,noabbrev]{cleveref}
+
+% ------------------------- IEEE-style sectioning ---------------------
+\renewcommand{\thesection}{\Roman{section}}
+\renewcommand{\thesubsection}{\thesection-\Alph{subsection}}
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+\titleformat{\section}{\centering\normalsize\scshape}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\itshape}{\Alph{subsection}.}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\arabic{subsubsection})}{0.5em}{}
+\titlespacing*{\section}{0pt}{2.2ex plus .6ex minus .2ex}{1.2ex plus .3ex}
+\titlespacing*{\subsection}{0pt}{1.8ex plus .5ex minus .2ex}{0.8ex plus .2ex}
+\titlespacing*{\subsubsection}{0pt}{1.4ex plus .4ex minus .2ex}{0.6ex plus .2ex}
+
+% ------------------------- captions ----------------------------------
+\captionsetup[figure]{font=footnotesize,labelsep=period,name=Fig.}
+\captionsetup[table]{font=footnotesize,labelsep=newline,justification=centering,labelfont=sc,textfont=sc}
+\renewcommand{\thetable}{\Roman{table}}
+
+% ------------------------- theorem environments ----------------------
+\newtheoremstyle{ieeedef}{0.7em}{0.7em}{\itshape}{\parindent}{\itshape}{:}{0.4em}{}
+\theoremstyle{ieeedef}
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{metricdef}{Metric}
+\renewcommand{\themetricdef}{M\arabic{metricdef}}
+\newtheorem{finding}{Finding}
+\renewcommand{\thefinding}{F\arabic{finding}}
+\crefname{definition}{Definition}{Definitions}
+\crefname{proposition}{Proposition}{Propositions}
+\crefname{metricdef}{Metric}{Metrics}
+\crefname{finding}{Finding}{Findings}
+
+% ------------------------- listings ----------------------------------
+\definecolor{lstbg}{gray}{0.97}
+\lstset{
+  basicstyle=\ttfamily\fontsize{7.2}{8.6}\selectfont,
+  breaklines=true, breakatwhitespace=true,
+  frame=single, framerule=0.3pt, rulecolor=\color{black!50},
+  backgroundcolor=\color{lstbg},
+  xleftmargin=4pt, xrightmargin=4pt,
+  aboveskip=6pt, belowskip=4pt,
+  showstringspaces=false, columns=fullflexible, keepspaces=true
+}
+
+% ------------------------- math macros -------------------------------
+\newcommand{\Sch}{\Sigma}                 % evidence schema
+\newcommand{\Corp}{\mathcal{E}}           % evidence corpus
+\newcommand{\Hist}{\mathcal{H}}           % operational history
+\newcommand{\Qw}{\mathcal{Q}}             % query workload
+\newcommand{\Def}{\mathsf{Def}}           % deficit
+\newcommand{\ED}{\mathsf{ED}}
+\newcommand{\ERC}{\mathsf{C}_{\mathrm{rec}}}
+\newcommand{\Irr}{\mathsf{Irr}}
+\newcommand{\Liab}{\mathsf{L}}
+\newcommand{\surv}{S}
+\newcommand{\haz}{\lambda}
+\newcommand{\unk}{\bot}
+
+% TikZ styles shared by figures
+\tikzset{
+  stage/.style={draw=black!70, rounded corners=1.5pt, fill=black!4,
+    minimum height=6.5mm, minimum width=14mm, align=center,
+    font=\fontsize{7.2}{8.2}\selectfont},
+  human/.style={stage, fill=blue!8},
+  attn/.style={draw=black!70, fill=green!9, rounded corners=1.5pt,
+    minimum height=5mm, align=center, font=\fontsize{6.8}{7.9}\selectfont},
+  evid/.style={draw=black!70, fill=orange!12, rounded corners=1.5pt,
+    minimum height=5mm, align=center, font=\fontsize{6.8}{7.9}\selectfont},
+  brok/.style={draw=red!70, fill=red!8, rounded corners=1.5pt,
+    minimum height=5mm, align=center, font=\fontsize{6.8}{7.9}\selectfont},
+  lbl/.style={font=\fontsize{6.8}{7.9}\selectfont},
+  flow/.style={-{Stealth[length=2mm]}, thick},
+  eflow/.style={-{Stealth[length=1.6mm]}, densely dashed, black!60},
+  bflow/.style={-{Stealth[length=1.6mm]}, red!70, densely dotted, thick}
+}
+\newcommand{\smlbl}{\fontsize{6.8}{7.9}\selectfont\color{black!70}}
+\newcommand{\cmark}{\ensuremath{\checkmark}}
+\newcommand{\xmark}{\ensuremath{\times}}
+
+% =====================================================================
+\begin{document}
+
+\twocolumn[{%
+\begin{center}
+{\fontsize{21}{25}\selectfont
+Evidence Debt: Measuring the Accumulated Cost of\\[2pt]
+Missing Operational Evidence in Cloud-Native Systems\par}
+\vspace{14pt}
+{\fontsize{11}{13}\selectfont Obede Bessa\par}
+\vspace{2pt}
+{\fontsize{9}{11}\selectfont Independent Researcher \;---\; obedebessa@gmail.com\par}
+\vspace{16pt}
+\end{center}
+}]
+
+% ------------------------- abstract ----------------------------------
+\noindent\textbf{\textit{Abstract}---Technical debt names the future engineering cost created by expedient technical decisions. We investigate an analogous but distinct phenomenon in cloud-native operations: \emph{evidence debt}, the accumulated future cost created when infrastructure changes occur without durable evidence of who acted, what changed, why, under which authorization, with what outcome, and how the system can be reconstructed. Missing evidence rarely causes immediate failure; its cost is deferred to incidents, audits, investigations, personnel turnover, and recovery, when operational history must be reconstructed from whatever survives. We contribute (i)~non-circular definitions grounded in observable properties rather than the financial metaphor; (ii)~a model in which debt is expected excess reconstruction cost over a query workload, reconstruction is a record-linkage problem, and decay follows per-source survival processes; (iii)~analytic results showing that evidence-debt ``interest'' is stochastic and step-shaped, while mandatory write-offs bound the debt; (iv)~a metric suite that rejects a scalar interest rate in favor of hazard-based alternatives; (v)~an executed, reproducible simulation with programmatically generated results; and (vi)~a field-study protocol with stated refutation conditions. At 40\% degradation, key stripping costs between 0.9 and 16 points of link coverage by evidence class, while whole-record deletion collapses coverage to 32\%. A pairwise arm confirms a superadditive identifier--timestamp interaction: 35 points of joint coverage loss against a 16-point sum of singles. False joins reach 48\% of accepted links under dense activity; reconstruction effort rises before coverage visibly falls; and evidence debt is computed end to end under a declared workload. The simulation establishes computability and discrimination under synthetic conditions; it estimates no real-world magnitudes.}
+
+\vspace{4pt}
+\noindent\textbf{\textit{Index Terms}---Evidence debt, technical debt, auditability, operational evidence, cloud-native systems, DevOps, record linkage, digital forensics, site reliability engineering.}
+\vspace{8pt}
+
+\input{sections/01-intro}
+\input{sections/02-conditions}
+\input{sections/03-definitions}
+\input{sections/04-model}
+\input{sections/05-metrics}
+\input{sections/06-simulation}
+\input{sections/07-interest}
+\input{sections/08-field}
+\input{sections/09-related}
+\input{sections/10-discussion}
+\input{sections/11-conclusion}
+
+\balance
+\bibliographystyle{ieeetr}
+\bibliography{refs}
+
+\end{document}

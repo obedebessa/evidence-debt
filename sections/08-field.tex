@@ -1,0 +1,55 @@
+\section{Field-Study Protocol (Not Executed)}
+\label{sec:field}
+
+The simulation validates constructs; only field study can establish real-world
+magnitudes and the economic significance of the central claim. We specify the
+protocol at implementable detail so that its execution---by us or others---produces
+comparable numbers. Design follows standard guidance for case study and measurement
+research in software engineering~\cite{runeson2009,wohlin2012}.
+
+\subsection{Instrument 1: Deficit Census}
+A static analyzer over an organization's stores (forge, ITSM, CI, registry, CD,
+cloud audit trail) that, for a sampled change population and a declared schema
+$\Sch$, computes EDR by class and interrogative (\cref{met:edr}), the identifier
+continuity rate across store boundaries (P5), and the estate's decay schedule
+(retention settings, scheduled migrations, service-level bus factors from
+repository history~\cite{avelino2016}). Output: the estate's deficit and decay
+inventory---inputs (i) and (iii) of \cref{prop:reduction}. Non-invasive; requires
+read access only.
+
+\subsection{Instrument 2: Reconstruction Drills}
+Timed, protocolized exercises measuring ERC directly (\cref{met:erc}): trained
+participants answer standardized historical queries (``for this running workload,
+establish what changed in window $w$, by whom, under which authorization, and
+why'') using only the organization's actual stores. Recorded: person-time by
+subtask, sources consulted, confidence of each recovered fact, unresolved facts,
+and---where an independent witness exists (e.g., the original author)---error.
+Drills are sampled across evidence ages to test IH1--IH2 (\cref{sec:interest-hyps})
+and across services with differing census scores, giving the correlation between
+EDR and measured ERC that a validated index (\cref{met:edi}) requires.
+Ethics: participants are studied with consent under institutional review;
+reconstruction targets are the organization's own records.
+
+\subsection{Instrument 3: Longitudinal Decay Observation}
+A yearly census re-run plus drill repetition on a fixed query panel. This observes
+interest directly (same query, later time, cost delta), realized irrecoverability
+(panel queries that become unanswerable), and the natural-experiment effects of
+migrations and departures as they occur. Three years covers the retention cliffs
+and a meaningful turnover fraction at typical rates~\cite{rigby2016}.
+
+\subsection{Opportunistic Measurement}
+Real incidents and audits are unplanned drills. The protocol includes a lightweight
+retrospective instrument---time-to-establish-what-changed, sources used, facts
+never established---attachable to existing incident-review practice~\cite{beyer2016}
+so that realized liabilities (\cref{def:liability}) are captured at low cost. DORA-%
+style delivery telemetry~\cite{forsgren2018,dora2019} provides covariates
+(change volume, deployment frequency) for normalizing debt inflow
+(\cref{met:growth}).
+
+\subsection{What Would Refute the Framework}
+The framework fails empirically if: census EDR does not predict drill ERC beyond
+chance (the syntactic layer is disconnected from the economic one); measured cost
+curves are smooth in evidence age with no alignment to retention/migration
+schedules (against IH1 and \cref{prop:steps}); or false-fact rates in drills are
+negligible even under heavy deficit (against \cref{fnd:false}'s transfer). Each
+refutation would be informative, and the instruments are designed to detect them.

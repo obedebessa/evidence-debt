@@ -1,0 +1,119 @@
+\section{How Evidence Debt Is Created (RQ1)}
+\label{sec:conditions}
+
+Evidence debt is not created by exotic failures. It is created by ordinary, often
+locally rational practices at change time, and by environmental properties of
+cloud-native platforms that make evidence perishable by default. We analyze both,
+because the distinction matters for remediation: practices can be changed; platform
+properties must be compensated for.
+
+\subsection{The Evidence a Change Should Leave Behind}
+\label{sec:schema-informal}
+
+Fix, informally for now (formally in \cref{def:schema}), the six interrogatives a
+complete operational record answers for a change: \emph{who} acted (a human or
+machine principal, resolvable to an accountable identity); \emph{what} changed (the
+content delta, identified precisely enough to reproduce it); \emph{why} (the intent:
+the problem, requirement, or decision the change served); \emph{under which
+authorization} (the approval or policy basis that legitimized it); \emph{with which
+outcome} (whether it succeeded, what it affected, what followed); and \emph{how the
+resulting state can be reconstructed} (the recovery-relevant linkage from running
+state back to buildable sources). Contemporary toolchains capture fragments of these
+in different systems---tickets, commit messages, review records, CI logs, registries,
+deployment tools, cloud audit trails~\cite{cloudtrail,ghdocs}---keyed by correlation
+identifiers whose continuity is nobody's explicit responsibility~\cite{sigelman2010,
+otel}.
+
+\subsection{Debt-Creating Practices}
+\label{sec:practices}
+
+The following practices, enumerated from the structure of the six interrogatives
+(each practice deletes or degrades at least one), create deficits at change time.
+We state them descriptively, not judgmentally; several are unavoidable under
+incident pressure, which is precisely why the debt frame---deliberate deferral with
+a later price---fits them.
+
+\begin{description}[leftmargin=1.6em,itemsep=1.5pt,topsep=2pt]
+\item[P1: Ticketless change.] Work performed without an intent record, or with intent
+recorded only in ephemeral channels (chat, hallway); deletes \emph{why}.
+\item[P2: Out-of-band execution.] Manual changes applied directly to runtime
+(console edits, \texttt{kubectl} against production, emergency patches) that bypass
+the pipeline where capture is instrumented; degrades \emph{what}, \emph{who}, and
+\emph{outcome} simultaneously.
+\item[P3: Shared and impersonal identity.] Changes executed under shared accounts,
+service credentials used interactively, or broad break-glass roles; deletes
+\emph{who} even when an API trail exists~\cite{cloudtrail}.
+\item[P4: Approval as gesture.] Authorization expressed as transient platform state
+(a review click, a pipeline gate) not bound durably to the executed content; deletes
+\emph{under which authorization} on governance timescales.
+\item[P5: Correlation rupture.] Failure to propagate identifiers across stages---no
+ticket reference in the commit, no commit in the build record, no digest in the
+deployment record; leaves all facts individually present but \emph{unjoinable},
+which \cref{sec:simulation} shows is a distinct and subtler deficit than absence.
+\item[P6: Retention minimization by default.] Accepting platform default retention
+(often 30--90 days for logs~\cite{nist80092,ghdocs,cloudtrail}) for records whose
+governance-relevant lifetime is years; converts captured evidence into future
+deficits on a schedule.
+\item[P7: Migration without evidence portability.] Tool and vendor changes (forge,
+ITSM, CI) that migrate active data but orphan or discard historical records and
+their identifiers; a bulk deficit-creation event.
+\item[P8: Knowledge kept in people.] Reliance on the memory of specific engineers as
+the de facto index into operational history; converts turnover~\cite{rigby2016,
+avelino2016} into evidence decay.
+\end{description}
+
+\subsection{Environmental Amplifiers}
+\label{sec:amplifiers}
+
+Cloud-native platforms amplify the consequences of P1--P8 in ways traditional
+infrastructure did not. \emph{Ephemerality}: containers, nodes, and serverless
+instances are routinely destroyed and replaced~\cite{burns2016}; state that would
+once have persisted incidentally on long-lived servers (shell histories, local logs,
+file timestamps) now vanishes by design, removing the accidental evidence that
+forensic practice historically relied on~\cite{casey2011}. \emph{Volume and
+automation}: reconciliation loops and autoscalers generate changes at rates no
+manual record-keeping can track, so anything not captured automatically is not
+captured~\cite{beetz2022,opengitops}. \emph{Fragmentation}: the record of one
+logical change is scattered across six or more stores with heterogeneous schemas,
+identifiers, clocks, and retention policies---the precondition for the correlation
+failures that \cref{sec:simulation} quantifies. \emph{Schema and identity drift}:
+service renames, account migrations, and observability re-instrumentation change the
+vocabulary in which old evidence is expressed, so even surviving records become
+progressively harder to join (a decay channel distinct from deletion,
+\cref{sec:interest}).
+
+\subsection{Why the Cost Is Deferred, Not Avoided}
+\label{sec:deferral}
+
+Each practice above trades a certain, small, present cost (filing the ticket,
+propagating the identifier, exporting before migration) against an uncertain, larger,
+future cost that is realized only if a \emph{query} against operational history
+arrives: an incident, an audit, an investigation, a recovery, a dispute. This
+contingent structure is what makes the debt frame apt and what makes the phenomenon
+invisible to steady-state operational metrics: a system can run flawlessly for years
+while its reconstructable history rots. Whether the deferred cost is eventually paid
+is therefore a question about the query workload (how often history is interrogated,
+with what stakes) and about decay (what survives until then)---exactly the two
+quantities the formal model of \cref{sec:model} is built around, and the reason the
+central claim of \cref{sec:intro} is a testable hypothesis rather than a tautology:
+if queries are rare and redundancy is high, deferral could in principle be nearly
+free. \Cref{sec:simulation} tests when it is and is not.
+
+\begin{figure}[t]
+\centering
+\resizebox{\columnwidth}{!}{\input{figs/fig-lifecycle}}
+\caption{The evidence-debt lifecycle. At change time, capture practices (top) either
+record or defer each evidence element; deferral creates a deficit (principal). During
+the latency period, decay processes---retention expiry, turnover, migration,
+identifier drift---degrade the remaining reconstruction paths (interest). The debt is
+realized when a query against operational history arrives (incident, audit,
+investigation, recovery, litigation): surviving evidence is assembled, missing links
+are reconstructed at effort cost, wrongly reconstructed at error cost, or found
+irrecoverable (write-off). Boxes name the constructs formalized in
+\cref{sec:definitions}.}
+\label{fig:lifecycle}
+\end{figure}
+
+\Cref{fig:lifecycle} summarizes the lifecycle: creation at change time, silent
+accumulation and decay during the latency period, and realization at query time.
+The remainder of the paper formalizes each stage.

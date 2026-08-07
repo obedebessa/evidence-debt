@@ -1,0 +1,37 @@
+% Interest trajectory (single column), data from ../data/interest.csv
+\begin{tikzpicture}
+\begin{axis}[
+  edplot,
+  width=0.92\columnwidth, height=5.1cm,
+  xlabel={deficit age $\tau$ (days)},
+  ylabel={expected reconstruction cost (log)},
+  ymode=log, ymin=0.5, ymax=200,
+  xmin=0, xmax=1100,
+  legend pos=north west,
+  axis y line*=left,
+]
+\addplot[serA, thick]
+  table[x=day, y=exp_cost, col sep=comma] {data/interest.csv};
+\addlegendentry{expected cost}
+\coordinate (cliff1) at (axis cs:90,0.5);
+\coordinate (cliff2) at (axis cs:400,0.5);
+\draw[black!35, densely dashed] (axis cs:90,0.5) -- (axis cs:90,200);
+\draw[black!35, densely dashed] (axis cs:400,0.5) -- (axis cs:400,200);
+\node[lbl, anchor=south, rotate=90] at (axis cs:78,2.6) {CI retention cliff (90 d)};
+\node[lbl, anchor=south, rotate=90] at (axis cs:388,2.6) {forge migration (400 d)};
+\end{axis}
+\begin{axis}[
+  edplot,
+  width=0.92\columnwidth, height=5.1cm,
+  xmin=0, xmax=1100,
+  ymin=0, ymax=1.02,
+  axis y line*=right,
+  axis x line=none,
+  ylabel={$\Pr[\text{irrecoverable}]$},
+  legend pos=south east,
+]
+\addplot[serB, thick, densely dashed]
+  table[x=day, y=p_irrec, col sep=comma] {data/interest.csv};
+\addlegendentry{$\Pr[\text{irrecoverable}]$}
+\end{axis}
+\end{tikzpicture}

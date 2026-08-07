@@ -1,0 +1,84 @@
+\section{Interest: The Shape of Cost Growth Over Time}
+\label{sec:interest}
+
+\Cref{prop:steps} predicts the temporal signature of evidence-debt interest:
+plateaus punctuated by cliffs, with smooth growth only where human memory is the
+cheapest surviving source. This section makes the prediction concrete by computing
+the expected-cost trajectory of one canonical deficit under a documented decay
+schedule. The computation is \emph{model-derived and clearly labeled as such}: its
+inputs are realistic and cited, its output is an illustration of structure, not a
+field measurement.
+
+\subsection{A Worked Decay Schedule}
+\label{sec:interest-worked}
+
+Consider the paradigmatic deficit of practice P1 (\cref{sec:practices}): a change
+deployed with no intent link---the ``why'' was never durably attached. Four
+reconstruction paths exist at creation, with survival forms from
+\cref{sec:model-decay}: the CI log, whose narrative context often reveals intent
+(cheap; step survival at a 90-day retention default~\cite{nist80092,ghdocs}); forge
+context---branch names, adjacent commits, review discussion (moderate cost; event
+survival until a forge migration, here placed at day 400, an instance of P7); the
+author's memory (expensive, and increasingly so with elapsed time; hazard survival
+with mean tenure $\sim$2.5 years~\cite{rigby2016}); and nothing (irrecoverable).
+
+\begin{figure}[t]
+\centering
+\input{figs/fig-interest}
+\caption{Model-derived interest trajectory for a fixed intent-link deficit under
+the decay schedule of \cref{sec:interest-worked} (computed from the released
+script; illustrative structure, not a field measurement). Expected reconstruction
+cost (solid, left axis, log scale) is flat while the cheapest path (CI log)
+survives, jumps at its 90-day retention cliff to the forge-context cost, jumps
+again at the day-400 migration to the interview path---whose expected cost then
+grows smoothly as turnover hazard accumulates and interviews lengthen---and
+saturates at the write-off cap as irrecoverability probability (dashed, right
+axis) approaches one. The shape---plateaus, cliffs, hazard-driven slope,
+saturation---is the general prediction of \cref{prop:steps}; none of it is
+compound growth.}
+\label{fig:interest}
+\end{figure}
+
+\Cref{fig:interest} plots the resulting expected cost and irrecoverability
+probability against deficit age. Three features deserve narration because they are
+the operational content of ``interest.'' First, \emph{the plateau}: for 90 days
+the deficit is cheap to repay---this is the window in which proactive backfill
+(\cref{sec:disc-management}) buys the most for the least. Second, \emph{the
+cliffs}: cost multiplies at dates that are \emph{knowable in advance}---retention
+expirations are published policy, migrations are scheduled projects---which is why
+\cref{met:interest} replaced a fitted rate with the decay schedule itself: the
+schedule is actionable (extend retention, export before migration), a rate is not.
+Third, \emph{the saturation}: past the last non-human path, the deficit's cost is
+dominated by the write-off penalty; further aging changes little because the loss
+has effectively already occurred (\cref{prop:writeoff}).
+
+\subsection{Evidence Half-Life}
+\label{sec:interest-halflife}
+
+The replacement summary of \cref{met:interest} is computed the same way: given an
+estate's path inventory and survival schedule, the \emph{evidence half-life}
+$\tau_{1/2}$ is the age at which half of a reference query set ceases to be
+answerable at baseline cost (first path death), and the \emph{irrecoverability
+horizon} the age distribution of last path deaths. The worked example, having a
+single shared schedule, makes $\tau_{1/2}$ degenerate to its one retention cliff
+(90 days); the summary earns its ``half'' only over a heterogeneous estate whose
+query set spans many schedules, which is its intended use. The structural point
+survives the degeneracy: for the paradigmatic deficit, the entire first cliff is
+set by a retention default that most organizations never chose
+deliberately~\cite{nist80092}. That framing---reading governance-critical decay
+dates off vendor defaults, rather than fitting a rate---is what makes the
+schedule actionable: the cheapest evidence-debt intervention is often a retention
+or export setting, not a new system.
+
+\subsection{Hypotheses for Field Confirmation}
+\label{sec:interest-hyps}
+
+The interest analysis yields field-testable hypotheses, taken up in
+\cref{sec:field}: \textbf{IH1}, measured reconstruction cost for comparable
+queries is a step function of evidence age, with steps aligned to the estate's
+documented retention and migration schedule; \textbf{IH2}, reconstructions that
+cross a personnel-departure boundary for the relevant service cost a multiple of
+those that do not~\cite{rigby2016}; \textbf{IH3}, organizations' realized
+irrecoverability concentrates in deficits older than the last surviving automated
+path, with human memory as the modal final path. These are stated as hypotheses;
+nothing in this paper confirms them.

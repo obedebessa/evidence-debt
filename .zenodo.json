@@ -1,0 +1,29 @@
+{
+  "title": "Evidence Debt: Reproducibility Package",
+  "upload_type": "software",
+  "description": "Manuscript source, deterministic simulation, canonical synthetic data, generated tables, and field-study protocol for Evidence Debt.",
+  "creators": [
+    {
+      "name": "Bessa Rocha da Silva, Obede",
+      "affiliation": "Independent Researcher"
+    }
+  ],
+  "access_right": "open",
+  "license": "mit-license",
+  "version": "1.0.0",
+  "publication_date": "2026-08-07",
+  "keywords": [
+    "evidence debt",
+    "operational evidence",
+    "record linkage",
+    "cloud-native systems",
+    "reproducibility"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/obedebessa/evidence-debt",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}

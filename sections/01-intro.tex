@@ -1,0 +1,126 @@
+\section{Introduction}
+\label{sec:intro}
+
+When Ward Cunningham likened expedient code to borrowed money, he gave software
+engineering a durable insight: some costs are not avoided but \emph{deferred}, and
+deferral has a price~\cite{cunningham1992}. Three decades of research have developed
+that insight into a family of debt constructs---code, design, architectural,
+documentation, and security debt among them~\cite{kruchten2012,li2015,tom2013,
+alves2016,rindell2019}---each naming a way in which present convenience becomes
+future engineering cost.
+
+This paper investigates a deferred cost that the debt family does not yet name, and
+that cloud-native operations manufacture at scale. When an infrastructure change is
+made---a deployment, a configuration edit, a permission grant, an emergency fix---an
+organization either captures durable evidence of the change's essential facts (who
+acted; what changed; why; under which authorization; with what outcome; how the
+resulting state can be reconstructed) or it does not. Not capturing them is almost
+always the locally rational choice: capture costs effort now, while the missing
+record costs nothing today. The cost arrives later, and in a different budget: during
+the incident whose responders must establish what changed last Tuesday; during the
+audit that must connect running workloads to authorized changes; during the security
+investigation that must distinguish an operator's forgotten hotfix from an intrusion;
+after the departure of the engineer who was the only index into a year of undocumented
+decisions; during disaster recovery, when ``how the system can be rebuilt'' turns out
+to live nowhere but in the system being rebuilt; and in litigation or regulatory
+inquiry, where the absence of records is itself a finding~\cite{sedona2018,sox2002}.
+
+We name the accumulated form of this deferred cost \emph{evidence debt}, and we spend
+the paper making the name earn its keep. The financial metaphor is seductive and
+mostly wrong in its details, and one of our contributions is to say precisely where
+(\cref{sec:model-anti,sec:disc-metaphor}). What survives scrutiny is a phenomenon
+with its own structure: evidence gaps are created by identifiable practices at change
+time (\cref{sec:conditions}); they are syntactically observable as \emph{deficits}
+against a declared evidence schema (\cref{sec:definitions}); their economic meaning
+is the \emph{excess reconstruction cost} they impose on future queries against
+operational history (\cref{sec:model}); that cost grows over time through
+identifiable decay processes---log expiration, ticket deletion, personnel turnover,
+resource ephemerality, identifier loss---whose superposition produces step-shaped,
+not compound, growth (\cref{sec:interest}); and past a knowable boundary the history
+becomes not expensive but \emph{irrecoverable}, a mandatory write-off with no
+financial analogue (\cref{sec:model-anti}).
+
+The central claim of the paper is stated by the commissioning question and treated as
+a hypothesis, not an assumption: \emph{organizations can defer evidence capture, but
+they cannot eliminate the eventual cost of reconstructing missing operational
+history}. As stated, the claim is not even obviously true---redundancy across
+operational data sources might, in principle, make most deferred capture free,
+because the history could be rebuilt from what other systems recorded anyway. Our
+simulation study (\cref{sec:simulation}) shows that this objection has real force at
+low degradation rates (redundancy absorbs single-class link loss almost completely)
+and fails structurally at higher rates and under record deletion, where
+reconstruction collapses, and---more insidiously---that heuristic reconstruction
+substitutes \emph{plausible but false} history for missing history at rates that
+reach 48\% of accepted links in our dense-activity condition. Deferred capture is
+thus repaid in one of three currencies: effort, error, or loss.
+
+\subsection{Research Questions}
+\label{sec:rqs}
+
+\begin{description}[leftmargin=3.2em,itemsep=1pt,topsep=2pt]
+\item[RQ:] Can accumulated deficiencies in operational evidence be formally modeled
+and measured as evidence debt?
+\item[RQ1:] What conditions create evidence debt?
+\item[RQ2:] How can evidence debt be quantified?
+\item[RQ3:] How does evidence debt influence later reconstruction effort?
+\item[RQ4:] Under which conditions does evidence debt become irrecoverable rather
+than merely expensive?
+\end{description}
+
+RQ1 is answered analytically by the debt-creating-conditions taxonomy of
+\cref{sec:conditions}; RQ2 by the definitions, model, and metric suite of
+\cref{sec:definitions,sec:model,sec:metrics}; RQ3 and RQ4 jointly by the model's
+predictions (\cref{sec:model,sec:interest}) and their test in the executed
+simulation study (\cref{sec:simulation}), with external validity addressed by the
+field protocol of \cref{sec:field}.
+
+\subsection{Contributions and Epistemic Status}
+\label{sec:contributions}
+
+\begin{enumerate}[label=\textbf{C\arabic*.},leftmargin=2.2em,itemsep=1.5pt,topsep=2pt]
+\item \textbf{Concept and definitions} (conceptual): non-circular formal definitions
+of evidence deficit, evidence debt, principal, interest, liability, reconstruction
+cost, and irrecoverability, each anchored to an observable or measurable property and
+none defined in terms of the financial metaphor (\cref{sec:definitions}).
+\item \textbf{Formal model} (conceptual/analytic): evidence debt as expected excess
+reconstruction cost over a query workload; reconstruction as record-linkage
+inference over a fragmented evidence corpus~\cite{fellegi1969,christen2012}; decay
+as per-source survival processes (\cref{sec:model}).
+\item \textbf{Anti-metaphor results} (analytic): propositions showing that
+evidence-debt ``interest'' is stochastic and step-shaped rather than compound, that
+the debt is bounded by mandatory write-offs, and that the constructs remain
+well-defined with the metaphor deleted (\cref{sec:model-anti,sec:disc-metaphor}).
+\item \textbf{Metric suite with rejection} (methodological): six candidate metrics
+critically evaluated; one (a scalar evidence-debt interest rate) is rejected as
+ill-defined under the model and replaced by hazard-based alternatives
+(\cref{sec:metrics}).
+\item \textbf{Executed simulation study} (empirical, synthetic): a reproducible
+evidence-degradation experiment---complete synthetic event chains; five evidence
+classes degraded at 1--40\%; a pairwise arm that gives the model's central
+interaction prediction a genuine chance to fail; removal and sensitivity arms
+(redundancy off, heuristic-window stress, actor-assumption breakage, single-knob
+density sweep) that separate design-entailed demonstrations from falsifiable
+tests; twenty seeds; all code and data released, with results tables generated
+programmatically from run outputs---including an end-to-end computation of
+$\ED(t)$ itself under a declared workload (\cref{sec:simulation}). The study
+validates that the constructs are computable and discriminating; it estimates no
+real-world magnitudes.
+\item \textbf{Field protocol} (methodological, not executed): instruments for a
+deficit census, reconstruction drills, and longitudinal decay observation in real
+organizations (\cref{sec:field}).
+\end{enumerate}
+
+Throughout, we separate established results (cited), analytic claims (proved within
+the model), empirical claims (measured in the simulation, scoped to it), hypotheses
+(labeled), and proposals (labeled). No empirical statement in this paper refers to a
+real organization.
+
+\subsection{Scope and Non-Goals}
+
+We study operational evidence for infrastructure and configuration change in
+cloud-native systems. We do not propose a logging product, do not claim that more
+retention is always better (retention has cost and legal risk~\cite{gdpr,nist80092}),
+and do not address the orthogonal question of whether captured evidence is
+trustworthy against tampering---the secure-logging literature covers
+integrity~\cite{schneier1999,crosby2009,haber1991}; our subject is \emph{existence,
+connectivity, and survivability} of evidence, which integrity mechanisms presuppose.

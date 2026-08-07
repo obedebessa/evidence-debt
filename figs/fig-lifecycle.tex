@@ -1,0 +1,37 @@
+% Evidence-debt lifecycle (single column, resized)
+\begin{tikzpicture}[node distance=3.6mm and 4.5mm]
+  % phase headers
+  \node[lbl, anchor=west] (h1) at (0,0) {\textbf{Change time}};
+  \node[lbl, anchor=west] (h2) at (3.45,0) {\textbf{Latency period}};
+  \node[lbl, anchor=west] (h3) at (7.4,0) {\textbf{Query time}};
+
+  % change time
+  \node[human, below=3mm of h1.west, anchor=north west, minimum width=26mm] (act)
+    {change occurs\\{\smlbl who / what / why / authz}\\[-1pt]{\smlbl outcome / recovery}};
+  \node[attn, below=3mm of act, minimum width=26mm] (cap)
+    {captured evidence\\{\smlbl records $+$ link keys}};
+  \node[brok, below=3mm of cap, minimum width=26mm] (def)
+    {\textbf{deficit} (principal)\\{\smlbl P1--P8: deferred capture}};
+  \draw[flow] (act) -- (cap);
+  \draw[bflow] (act.south east) to[out=-40,in=40] (def.north east);
+
+  % latency
+  \node[evid, right=6mm of cap, minimum width=27mm] (decay)
+    {decay processes\\{\smlbl retention expiry $\cdot$ migration}\\[-1pt]{\smlbl turnover $\cdot$ ephemerality $\cdot$ id drift}};
+  \node[brok, below=3mm of decay, minimum width=27mm] (interest)
+    {\textbf{interest}\\{\smlbl recovery paths die;}\\[-1pt]{\smlbl cost plateaus $\to$ cliffs}};
+  \draw[eflow] (cap) -- (decay);
+  \draw[bflow] (def.east) to[out=0,in=200] (interest.west);
+  \draw[flow] (decay) -- (interest);
+
+  % query time
+  \node[human, right=6mm of decay, minimum width=25mm] (query)
+    {query arrives\\{\smlbl incident $\cdot$ audit $\cdot$ investigation}\\[-1pt]{\smlbl recovery $\cdot$ litigation}};
+  \node[stage, below=3mm of query, minimum width=25mm] (rec)
+    {reconstruction\\{\smlbl effort (ERC)}\\[-1pt]{\smlbl error (false joins)}};
+  \node[brok, below=3mm of rec, minimum width=25mm] (wo)
+    {\textbf{write-off}\\{\smlbl irrecoverable facts}\\[-1pt]{\smlbl realized liability}};
+  \draw[flow] (query) -- (rec);
+  \draw[bflow] (rec) -- (wo);
+  \draw[eflow] (interest.east) to[out=0,in=190] (rec.west);
+\end{tikzpicture}

@@ -1,0 +1,63 @@
+% Simulation results, 2x2 group (two-column width), data from data/series/
+\begin{tikzpicture}
+\begin{groupplot}[
+  group style={group size=2 by 2, horizontal sep=1.55cm, vertical sep=1.45cm},
+  edplot,
+]
+% (a) coverage, dense
+\nextgroupplot[title={(a) link coverage (dense)}, ylabel={coverage},
+  ymin=0, ymax=1.05, legend pos=south west]
+\addplot[serA, mark=*, mark size=1.5pt, thick]
+  table[x=p, y=cov, col sep=comma] {data/series/dense_approval_links.csv};
+\addlegendentry{approval links}
+\addplot[serC, mark=square*, mark size=1.4pt, thick, densely dashed]
+  table[x=p, y=cov, col sep=comma] {data/series/dense_correlation_ids.csv};
+\addlegendentry{correlation ids}
+\addplot[black, mark=pentagon*, mark size=1.6pt, thick]
+  table[x=p, y=cov, col sep=comma] {data/series/dense_ids_plus_timestamps.csv};
+\addlegendentry{ids $+$ timestamps (pairwise)}
+\addplot[serB, mark=triangle*, mark size=1.8pt, thick, dash dot]
+  table[x=p, y=cov, col sep=comma] {data/series/dense_source_artifacts.csv};
+\addlegendentry{record deletion}
+\addplot[serD, mark=diamond*, mark size=1.8pt, thick, densely dotted]
+  table[x=p, y=cov, col sep=comma] {data/series/dense_combined.csv};
+\addlegendentry{all classes}
+
+% (b) false joins, combined, both profiles
+\nextgroupplot[title={(b) false-join rate (all-classes arm)},
+  ylabel={false joins / accepted links}, ymin=0, ymax=0.55,
+  legend pos=north west]
+\addplot[serD, mark=diamond*, mark size=1.8pt, thick]
+  table[x=p, y=false, col sep=comma] {data/series/dense_combined.csv};
+\addlegendentry{dense}
+\addplot[serA, mark=o, mark size=1.5pt, thick, densely dashed]
+  table[x=p, y=false, col sep=comma] {data/series/sparse_combined.csv};
+\addlegendentry{sparse}
+
+% (c) irrecoverability constructs
+\nextgroupplot[title={(c) irrecoverability constructs (dense)},
+  ylabel={fraction of chains}, ymin=0, ymax=1.05, legend pos=south east,
+  domain=0:40, samples=100]
+\addplot[serB, mark=triangle*, mark size=1.8pt, thick, only marks]
+  table[x=p, y=recloss, col sep=comma] {data/series/dense_combined.csv};
+\addlegendentry{record loss (all classes)}
+\addplot[black!60, thick] {1-(1-x/100)^6};
+\addlegendentry{$1-(1-p)^{6}$ (consistency check)}
+\addplot[serC, mark=square*, mark size=1.4pt, thick, densely dashed]
+  table[x=p, y=irrec, col sep=comma] {data/series/dense_correlation_ids.csv};
+\addlegendentry{identifiability (key stripping)}
+
+% (d) computed ED
+\nextgroupplot[title={(d) computed $\ED$ (dense, declared workload)},
+  ylabel={units / configuration}, ymin=0, ymax=210, legend pos=north west]
+\addplot[serD, mark=diamond*, mark size=1.8pt, thick]
+  table[x=p, y=ed, col sep=comma] {data/series/dense_combined.csv};
+\addlegendentry{all classes}
+\addplot[serB, mark=triangle*, mark size=1.8pt, thick, dash dot]
+  table[x=p, y=ed, col sep=comma] {data/series/dense_source_artifacts.csv};
+\addlegendentry{record deletion}
+\addplot[serC, mark=square*, mark size=1.4pt, thick, densely dashed]
+  table[x=p, y=ed, col sep=comma] {data/series/dense_correlation_ids.csv};
+\addlegendentry{correlation ids}
+\end{groupplot}
+\end{tikzpicture}

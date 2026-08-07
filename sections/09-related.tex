@@ -1,0 +1,175 @@
+\section{Related Work and the Novelty Test}
+\label{sec:related}
+
+\subsection{The Debt Family}
+\label{sec:rel-family}
+Technical debt began as a metaphor for expedient code~\cite{cunningham1992} and
+matured into a research field with theory, taxonomy, and management
+practice~\cite{kruchten2012,li2015,tom2013,alves2016,seaman2011,ernst2015}. The
+family has since acquired members---architectural, test, documentation, security,
+social, and hidden machine-learning debt~\cite{alves2016,rindell2019,tamburri2013,
+sculley2015,avgeriou2016}---and, recently, organizational debt~\cite{alami2024};
+practitioner literature gestures at ``operational debt''~\cite{owczarek2019} and,
+closest in spirit to our subject, ``dark debt'': deferred, invisible operational
+cost that reveals itself only in anomalies~\cite{stella2017}. Evidence debt gives
+one species of dark debt a measurement theory. Evidence debt shares the family's defining structure
+(present expedience, deferred cost, accruing carrying cost, principal/interest
+decomposition) and differs in its \emph{object}: every existing debt type is a
+property of the \emph{system or organization as it is}---its code, architecture,
+tests, prose, security posture, structure---whereas evidence debt is a property of
+the \emph{record of how it came to be}. The distinction has consequences the family's
+tools cannot absorb: evidence debt is invisible to any inspection of the current
+system state (a flawless codebase can carry catastrophic evidence debt); its
+carrying cost is driven by third-party retention clocks and personnel turnover
+rather than by ongoing development friction; and it uniquely exhibits mandatory
+write-offs (\cref{prop:writeoff})---no amount of later diligence recovers a record
+that no longer exists anywhere, whereas any code can, at some price, be refactored.
+
+Self-admitted technical debt~\cite{potdar2014} offers an instructive contrast:
+there, the record (a TODO comment) survives and the remediation is deferred; here,
+the remediation (the system works) is complete and the \emph{record} is what was
+deferred.
+
+\subsection{Documentation Debt}
+\label{sec:rel-doc}
+The nearest family member deserves its own confrontation. Documentation debt names
+missing or outdated \emph{descriptions of the system}: design docs, API references,
+runbooks~\cite{alves2016}. Evidence debt names missing \emph{records of events}:
+who changed what, when, why, under what authority, with what outcome.
+The two differ in referent (state versus history), in falsifiability
+(documentation can be regenerated from the system it describes; events cannot be
+re-observed once their traces are gone), and in decay mechanics (documentation
+rots by divergence from a living system~\cite{parnas1994,lehman1980}; evidence
+rots by destruction of sources and loss of joinability). The software-maintenance
+tradition has long measured the cost of understanding systems whose rationale is
+lost~\cite{lientz1980,hunt2002}---``software archaeology'' is reconstruction
+effort by another name, applied to code rather than operations. A team with
+perfect current documentation and no change history has zero documentation debt
+and maximal evidence debt.
+
+\subsection{Observability and Logging}
+\label{sec:rel-obs}
+Observability practice~\cite{majors2022,otel,sigelman2010} and log
+management~\cite{nist80092} concern the capture and interrogation of operational
+telemetry, and are the mechanical substrate on which evidence capture rides;
+empirical studies show that even this substrate is captured incompletely and
+inconsistently in practice~\cite{yuan2012}. But
+observability's design center is the \emph{present}: understanding the system's
+current behavior, with retention windows sized for debugging, not governance. The
+obvious objection---``is this not just missing logs?''---is answered by three
+structural gaps.
+First, logs are one store among six-plus; the deficits that dominated our
+experiment---broken intent and authorization linkage, correlation rupture---live
+\emph{between} stores, and no log completeness fixes joinability
+(\cref{fnd:superadd}). Second, missing logs is a state description; evidence debt
+is an economic quantity over a query workload with decay dynamics
+(\cref{def:debt})---one can have complete logs and high debt (all short-retention)
+or gappy logs and low debt (rare, low-stakes queries). Third, the observability
+literature has no counterpart of irrecoverability, interest schedules, or
+principal---the constructs that make deferral decisions analyzable. Secure-logging
+research~\cite{schneier1999,crosby2009,haber1991} guarantees integrity of what is
+kept and is orthogonal, as scoped in \cref{sec:intro}.
+
+\subsection{Provenance, Forensics, and Records Management}
+Provenance systems capture derivation graphs~\cite{provdm,muniswamy2006,
+pasquier2017}---when deployed, they are evidence-debt \emph{prevention}
+infrastructure, and our evidence graph (\cref{sec:model-graph}) is deliberately
+PROV-compatible. What the provenance literature does not provide is the economics
+of its own absence: what it costs to \emph{not} have deployed it, which is this
+paper's subject. Digital forensics~\cite{casey2011,nist80086} supplies the
+reconstruction craft and the source-exhaustion standard our irrecoverability
+certification borrows; its setting is adversarial and case-bound, whereas evidence
+debt is an estate-level, mostly non-adversarial accounting. Records management and
+archival science~\cite{iso15489,oais,rothenberg1995} have long managed retention
+against future obligation; evidence debt can be read as bringing their concern into
+software operations with a formal cost model attached, where change velocity and
+fragmentation are orders of magnitude beyond the archival setting.
+
+\subsection{Knowledge Management and Turnover}
+Organizational memory research established that organizations forget through
+personnel flow~\cite{walsh1991,nonaka1994}, and empirical software engineering has
+quantified turnover-induced knowledge loss~\cite{rigby2016} and truck
+factors~\cite{avelino2016}. In our model these appear precisely as the hazard
+survival of human recovery paths (\cref{sec:model-decay})---the term that makes
+interest smooth between cliffs (\cref{fig:interest}). The debt frame adds what the
+knowledge literature lacks for this domain: a per-change, schema-relative,
+countable unit of deferral (the deficit) connecting individual operational
+decisions to the aggregate forgetting rate.
+
+\subsection{Linkage, Traceability, Process Mining, and Data Quality}
+\label{sec:rel-linkage}
+Our reconstruction theory imports record linkage~\cite{fellegi1969,christen2012}
+(effort/error structure of inferential joins), the missing-data
+tradition~\cite{rubin1976,little2002} (missingness as a mechanism, not just a
+rate---operational evidence is emphatically not missing at random: P1--P8 delete
+specific interrogatives under specific pressures, a bias field studies must model),
+and data-quality theory~\cite{wang1996} (fitness-for-use relativity, mirrored in
+our schema- and workload-relativity).
+
+Three empirical traditions have, in fact, already measured instances of the
+phenomenon this paper names, and confronting them sharpens both the novelty claim
+and its limits. The mining-software-repositories community documented
+\emph{missing links} between bugs and fixing commits---our P5, correlation
+rupture, in the wild---and showed that heuristically reconstructed link sets are
+not merely incomplete but systematically \emph{biased}, corrupting downstream
+conclusions~\cite{bachmann2010,bird2009}: field evidence that the false-join
+channel of \cref{fnd:false} operates outside simulations. Requirements-%
+traceability research has treated missing artifact links and their after-the-fact
+recovery for three decades~\cite{gotel1994,antoniol2002}, with the same
+effort/precision economics. Process mining reconstructs operational processes
+from partial, noisy event logs and maintains an explicit log-quality
+literature~\cite{aalst2016}. What none of these supplies---and what evidence debt
+adds over them---is the estate-level economic aggregation: a schema-relative
+deficit census, decay dynamics with principal/interest structure, an
+irrecoverability boundary, and a workload-weighted cost model connecting today's
+capture decisions to tomorrow's reconstruction burden. Conversely, these
+literatures ground our claim that the phenomenon is real and measurable at
+scale; they are the natural execution venues for parts of \cref{sec:field}.
+
+Configuration drift and IaC research~\cite{rahman2019mapping,beetz2022,
+opengitops} concern divergence of running state from desired state; evidence debt
+concerns divergence of \emph{recorded history} from \emph{actual history}---a
+system with zero configuration drift can be maximally evidence-indebted about how
+it got there. Insecure IaC practice itself illustrates deficit creation at the
+source~\cite{rahman2019}. Supply-chain integrity work~\cite{torres2019,slsa}
+makes particular evidence chains cryptographically strong; it hardens what is
+captured rather than pricing what is not. Regulatory control catalogs demand
+auditable change records outright~\cite{nist80053,sox2002}; evidence debt supplies
+the quantity those obligations implicitly assume is being managed.
+
+\subsection{The Novelty Test, Answered Directly}
+\label{sec:novelty}
+
+\emph{Why is this not simply technical debt?} Different object (record of history
+versus state of system), different decay drivers (third-party clocks and turnover
+versus development friction), different terminal behavior (mandatory write-off
+versus indefinite refactorability), different observability (invisible to system
+inspection). \emph{Why not documentation debt?} State versus events;
+regenerability versus unrepeatable observation (\cref{sec:rel-doc}). \emph{Why
+not missing logs?} Logs are one store; the phenomenon is cross-store joinability,
+workload-relative cost, and decay dynamics; completeness of capture at one point
+neither implies nor is implied by low debt (\cref{sec:rel-obs}). \emph{Why not
+observability debt?} Insufficient observability is one \emph{creation condition}
+among the eight of \cref{sec:practices}; the debt also grows from retention,
+migration, turnover, and identifier rupture after perfectly observable capture.
+\emph{What unique phenomenon does evidence debt capture?} The deferred,
+decaying, workload-contingent cost of reconstructing operational history---a
+quantity with its own creation conditions (RQ1), estimator theory (RQ2),
+effort-before-failure dynamics (RQ3, \cref{fnd:effort}), and irrecoverability
+boundary (RQ4, \cref{fnd:redundancy,fnd:constructs})---none of which is expressible as a
+property of the current system state that the existing debt family describes.
+
+\begin{figure}[t]
+\centering
+\resizebox{\columnwidth}{!}{\input{figs/fig-tdvsed}}
+\caption{Technical debt versus evidence debt. Both share the deferral structure
+(left): an expedient act now, a carrying cost, a repayment event. They diverge in
+every load-bearing property (right): object, visibility, interest driver, growth
+shape, terminal state, and repayment currency. The comparison is the condensed form
+of \cref{sec:novelty}.}
+\label{fig:tdvsed}
+\end{figure}
+
+\Cref{fig:tdvsed} condenses the comparison. The claim, precisely bounded: evidence
+debt is a member of the debt family by structure, and reducible to no existing
+member by object, dynamics, or management levers.

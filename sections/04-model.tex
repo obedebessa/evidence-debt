@@ -1,0 +1,213 @@
+\section{A Formal Model of Evidence Debt (RQ2--RQ4)}
+\label{sec:model}
+
+The definitions of \cref{sec:definitions} refer to reconstruction cost and decay
+without structure. This section supplies the structure: operational history as a
+graph, evidence as a fragmented projection of it, reconstruction as linkage
+inference, and decay as survival processes over sources. The model is chosen so that
+every parameter is either directly observable or estimable by the procedures of
+\cref{sec:metrics,sec:field}, and so that the qualitative predictions tested in
+\cref{sec:simulation} follow from it rather than from intuition.
+
+\subsection{History, Evidence, and Fragmentation}
+\label{sec:model-graph}
+
+\textbf{Ground truth.} Operational history is a typed, acyclic \emph{event graph}
+$\Hist = (V, L)$: nodes $V$ are events and artifacts of a change (intent record,
+content revision, authorization act, build, artifact, deployment, runtime
+configuration, outcome), and links $L \subseteq V \times V$ are the true causal and
+derivational relations among them. A \emph{chain} is the subgraph of one logical
+change. $\Hist$ is what actually happened; no one holds it directly.
+
+\textbf{Evidence.} The corpus $\Corp(t)$ (\cref{def:corpus}) is a set of
+\emph{records}, each held in a store $s \in S$, each testifying to a node and
+carrying zero or more \emph{link keys}: identifiers intended to name adjacent nodes
+(a ticket id in a commit message, a commit hash in a build record, a digest in a
+deployment record)~\cite{sigelman2010}. The corpus thus determines an
+\emph{observed graph}: nodes for surviving records, and an edge wherever a surviving
+key names a surviving record. Fragmentation is the model's default: records of one
+chain are distributed across stores with independent schemas, clocks, and retention
+regimes (\cref{sec:amplifiers}).
+
+\textbf{Deficit classes.} Relative to schema $\Sch$, a deficit
+(\cref{def:deficit}) is one of: a \emph{missing node} (the record never existed or
+was deleted), a \emph{missing key} (the record exists but the link key was never
+propagated or was stripped), or a \emph{degraded attribute} (e.g., a null timestamp,
+an unresolvable identity). The distinction is not pedantic: \cref{sec:simulation}
+shows missing nodes and missing keys have different cost signatures---keys are
+compensable by inference at effort-and-error cost; nodes, once every copy is gone,
+are not compensable at all.
+
+\subsection{Reconstruction as Linkage Inference}
+\label{sec:model-linkage}
+
+A query $q$ (\cref{def:rec}) requires recovering a subset of true links $L_q$. Where
+keys survive, recovery is lookup. Where they do not, recovery is \emph{record
+linkage}: deciding, from attributes (service, actor, temporal proximity, content
+similarity), which surviving records refer to adjacent events---precisely the
+inference problem formalized by Fellegi and Sunter~\cite{fellegi1969} and developed
+in entity resolution~\cite{christen2012}. This identification imports the right
+consequences. Linkage has \emph{effort}: candidate sets must be enumerated and
+compared, and effort grows with the ambient density of similar records. Linkage has
+\emph{error}: with imperfect discriminators, some accepted matches are false; false
+links do not announce themselves, so the reconstructed history is silently wrong.
+And linkage has \emph{limits}: when discriminating attributes are themselves
+degraded (timestamps nulled, identities recycled), candidates become
+indistinguishable and links unrecoverable even though both endpoint records
+survive.
+
+For a single required link $\ell$, let $\mathrm{paths}(\ell, t)$ be its surviving
+\emph{recovery paths} at $t$: the direct key, redundant keys (a digest recorded in
+two places), inferential linkage over attributes, and extra-corpus paths (asking the
+engineer who did it). Each path $r$ has expected effort $c_r(t)$ and error rate
+$\varepsilon_r(t)$. A rational reconstructor uses the cheapest acceptable path, so
+the link's expected cost is
+\[
+c_\ell(t) \;=\; \min \{\, c_r(t) : r \in \mathrm{paths}(\ell, t),\;
+\varepsilon_r(t) \le \bar{\varepsilon} \,\},
+\]
+with $c_\ell(t)$ undefined---the link irrecoverable (\cref{def:irrec})---when the
+set is empty. Query cost aggregates over required links (with shared-work economies
+we do not model further), and $\ED(t)$ follows by \cref{def:debt}.
+
+\subsection{Why Not $ED = f(M, F, R, U, C)$}
+\label{sec:model-notformula}
+
+A natural first proposal---and the one we expect readers to reach for---is a form
+$ED = f(M, F, R, U, C)$ over missingness, fragmentation, retention risk,
+uncertainty, and reconstruction cost. We considered and declined the form, keeping
+the factors. The
+reason is that the five quantities are not independent inputs to be aggregated; they
+occupy different roles in the mechanism. Missingness ($M$) parameterizes the
+deficit census. Fragmentation ($F$) and correlation uncertainty ($U$) shape the
+\emph{cost and error of inferential paths}: fragmentation multiplies the stores to
+be searched, and $U$---driven by ambient record density and discriminator
+quality---sets false-match rates~\cite{fellegi1969}. Retention risk ($R$) is a
+property of \emph{decay}: it determines which paths survive to time $t$
+(\cref{sec:model-decay}). Reconstruction cost ($C$) is not an input at all; it is
+the \emph{output} the others produce through the path structure. A scalar
+aggregation of the five would assign weights to quantities whose interaction is
+mediated by minimization over paths---and the minimization is what generates the
+phenomena that matter (plateaus, cliffs, superadditivity; \cref{sec:model-props}).
+Any composite index built for reporting purposes (\cref{met:edi}) must therefore be
+understood as an estimator of \cref{def:debt}, not as its definition.
+
+\subsection{Decay: Survival of Recovery Paths}
+\label{sec:model-decay}
+
+Each recovery path $r$ for a link has a \emph{survival function}
+$\surv_r(\tau)$: the probability it remains usable $\tau$ after chain creation. The
+empirically dominant forms are: \emph{step survival} for policy-driven retention
+(a CI log is present until day $T_r$, then gone~\cite{nist80092,ghdocs,
+cloudtrail}); \emph{event survival} for migrations and decommissionings (present
+until an organizational event at an uncertain date); \emph{hazard survival} for
+human sources (available until the holder departs, with turnover hazard
+$\haz$~\cite{rigby2016}); and \emph{drift degradation} for inferential paths
+(discriminators weaken as identities are recycled and schemas
+evolve~\cite{parnas1994,lehman1980}). Interest (\cref{def:interest}) is the
+consequence: as paths die, $c_\ell(t)$ jumps to the next-cheapest survivor, and
+when the last dies, the link crosses into irrecoverability.
+
+\subsection{Propositions}
+\label{sec:model-props}
+
+The following are analytic consequences of the path model; proofs are elementary
+and stated to make the dependency structure explicit. Their empirical counterparts
+are exercised in \cref{sec:simulation}, which distinguishes design-entailed
+demonstrations from the falsifiable tests (notably the pairwise interaction test
+of \cref{prop:superadd}).
+
+\begin{proposition}[Redundancy plateau]
+\label{prop:plateau}
+If a link retains at least one surviving path whose cost equals the original
+cheapest cost, its expected reconstruction cost is unchanged by the loss of any
+number of other paths. Consequently, estate-level cost as a function of a
+degradation rate is flat while redundancy lasts and departs from flatness only as
+cheapest paths begin to be destroyed.
+\end{proposition}
+\begin{proof}
+Immediate from $c_\ell = \min$ over surviving paths: the minimum is invariant to
+removal of non-minimal elements.
+\end{proof}
+
+\begin{proposition}[Superadditive interaction of deficit classes]
+\label{prop:superadd}
+Let two degradation classes each destroy a disjoint subset of paths such that
+neither alone destroys any link's full path set. Then each alone adds bounded
+effort cost and zero irrecoverability, while their combination can produce
+irrecoverability---an effect strictly greater than the sum of marginal effects.
+\end{proposition}
+\begin{proof}
+By construction: irrecoverability requires the surviving-path set to be empty
+(\cref{def:irrec}); if class $A$ leaves paths $P \setminus A$ nonempty and class
+$B$ leaves $P \setminus B$ nonempty, but $A \cup B \supseteq P$, the combined
+effect (undefined cost) exceeds any finite sum of the individual effects.
+\end{proof}
+
+\begin{proposition}[Interest is step-shaped, not compound]
+\label{prop:steps}
+Under the survival forms of \cref{sec:model-decay}, the expected cost
+$\mathbb{E}[c_\ell(t)]$ of a fixed deficit is a piecewise structure: constant while
+the cheapest surviving path persists, jumping at retention boundaries and
+organizational events, with smooth growth only where a hazard-governed human path
+is the cheapest survivor. In particular, there is no constant $\rho$ such that
+cost grows as $e^{\rho \tau}$ in general: a compound ``interest rate'' is not a
+property of the process.
+\end{proposition}
+\begin{proof}
+Piecewise-constancy between path deaths follows from \cref{prop:plateau}; jumps at
+step/event survival boundaries follow from minimization passing to the next
+survivor; the only smooth component is the expectation over hazard-distributed
+death times of a human path, which yields growth bounded by the next path's cost,
+not unbounded compounding.
+\end{proof}
+
+\begin{proposition}[Bounded debt; mandatory write-off]
+\label{prop:writeoff}
+With finite penalty weights $\pi_q$, $\ED(t)$ is bounded above by
+$\sum_q w_q(\bar{C}_q + \pi_q)$, where $\bar{C}_q$ is the cost of $q$'s most
+expensive recoverable state. Once a link is irrecoverable, further decay does not
+increase its contribution: the debt does not grow without bound; it converts to a
+realized loss cap. Financial debt has no analogous mandatory write-off imposed by
+the world rather than chosen by a creditor.
+\end{proposition}
+\begin{proof}
+Directly from \cref{def:debt}: each query's contribution is at most its recoverable
+cost bound before irrecoverability and exactly $w_q \pi_q$ after.
+\end{proof}
+
+\label{sec:model-anti}
+\Cref{prop:steps,prop:writeoff} are the model's verdict on the metaphor, obtained
+before any experiment: evidence debt has principal and carrying cost, but its
+``interest'' is stochastic, discontinuous, and driven by third parties' retention
+clocks rather than by any contracted rate, and its growth terminates in write-off
+rather than compounding indefinitely. \Cref{sec:disc-metaphor} completes the
+argument that the constructs stand without the metaphor.
+
+\begin{proposition}[Measurement reduction]
+\label{prop:reduction}
+$\ED(t)$ is a function of exactly four inputs: (i)~the deficit census (observable,
+\cref{def:deficit}); (ii)~the path inventory with per-path cost and error
+calibrations; (iii)~the survival schedule of paths (observable from retention
+policies, HR data, and migration calendars); and (iv)~the declared workload
+$(w_q, \pi_q)$. No other quantity enters \cref{def:debt}.
+\end{proposition}
+\begin{proof}
+By inspection of \cref{def:debt} through \cref{sec:model-linkage,sec:model-decay}:
+the expectation is over path survival (iii) applied to the path inventory (ii)
+for the links the census (i) marks deficient, aggregated under (iv).
+\end{proof}
+
+Two honesty notes bound what \cref{prop:reduction} claims. First, it is an
+input-enumeration result, not a feasibility result: input (ii)---per-path cost and
+error calibrations for future queries---is the empirically hard part, obtainable
+only by reconstruction drills (\cref{sec:field}) and bounded, not supplied, by
+linkage theory~\cite{fellegi1969}. Second, inputs (i) and (iv) are relative to
+declared governance choices ($\Sch$; $w_q, \pi_q$), so $\ED$ values are
+comparable across estates only under shared reference declarations
+(\cref{sec:metrics,sec:disc-relativity}). RQ2 is therefore answered as:
+\emph{quantifiable relative to declared governance inputs, with the empirical
+burden concentrated in cost calibration}---an affirmative with stated conditions,
+not an unconditional one. \Cref{sec:metrics} turns the inputs into named metrics;
+\cref{sec:sim-workload} instantiates the entire chain, computing $\ED(t)$ end to end in
+a closed world where every input is known.

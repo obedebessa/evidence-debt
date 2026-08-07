@@ -1,0 +1,154 @@
+\section{Definitions (RQ2, Part 1)}
+\label{sec:definitions}
+
+We build the definitions in strict dependency order, so that none is circular:
+syntactic objects first (schema, corpus, deficit), then operational quantities
+(reconstruction cost, irrecoverability), then the economic aggregate (debt) and its
+decomposition (principal, interest, liability). Each definition ends with its
+\emph{observability basis}: what one would measure to instantiate it. The financial
+vocabulary is used only \emph{after} the underlying quantity is defined without it.
+
+\begin{definition}[Evidence Schema]
+\label{def:schema}
+An \emph{evidence schema} $\Sch$ is a declared mapping from each class of
+operational change to the set of \emph{evidence elements} required for that class:
+typed facts (actor identity, content delta, intent statement, authorization basis,
+outcome record, recovery linkage) together with the \emph{link keys} that connect
+them across stores. \emph{Observability:} $\Sch$ is an artifact the organization
+writes down; its existence is a governance choice, and all subsequent measurement is
+relative to it.
+\end{definition}
+
+The schema-relativity is deliberate and load-bearing: ``missing'' is undefined
+without a statement of what was supposed to exist. This mirrors measurement practice
+in data quality~\cite{wang1996} and avoids the circularity of defining debt by
+whatever later turns out to be needed. The six-interrogative schema of
+\cref{sec:schema-informal} is our reference instantiation; organizations may declare
+stricter or weaker ones, and comparisons are meaningful only under a fixed $\Sch$.
+
+\begin{definition}[Evidence Corpus]
+\label{def:corpus}
+The \emph{evidence corpus} $\Corp(t)$ is the set of evidence elements and link keys
+that durably exist and are retrievable at time $t$, across all stores.
+\emph{Observability:} enumerable by inventory of the stores, up to discoverability
+limits that are themselves part of the phenomenon (\cref{sec:metrics}).
+\end{definition}
+
+\begin{definition}[Evidence Deficit]
+\label{def:deficit}
+For a change $x$ of class $k$ occurring at time $t_x$, the \emph{evidence deficit}
+$\Def(x, t) \subseteq \Sch(k)$ is the set of schema-required elements and link keys
+for $x$ absent from $\Corp(t)$. The \emph{deficit at creation} is $\Def(x, t_x)$;
+elements present at $t_x$ but absent at $t > t_x$ have \emph{decayed}.
+\emph{Observability:} a syntactic census---for each change, check each required
+element's presence. No judgment about future cost is involved.
+\end{definition}
+
+\begin{definition}[Reconstruction and Its Cost]
+\label{def:rec}
+A \emph{query} $q$ against operational history asks for a set of facts and links
+concerning past changes (e.g., ``what changed on service $s$ in window $w$, by whom,
+under what authorization?''). \emph{Reconstruction} is the process---human,
+algorithmic, or mixed---of answering $q$ from $\Corp(t)$. Its \emph{cost}
+$\ERC(q, \Corp(t))$ is the effort expended (person-time and compute, on a declared
+accounting) to reach an answer of stated confidence, and its \emph{error} is the
+divergence of the answer from ground truth. \emph{Observability:} cost is measurable
+directly whenever reconstruction is actually performed (incident retrospectives,
+audit preparation, the drills of \cref{sec:field}); error is measurable wherever
+ground truth is independently available---natively in simulation
+(\cref{sec:simulation}), partially in the field.
+\end{definition}
+
+\begin{definition}[Evidence Irrecoverability]
+\label{def:irrec}
+A fact or link required by query $q$ is \emph{irrecoverable} at $t$ if no
+reconstruction procedure over $\Corp(t)$ can establish it at the required confidence
+---operationally, if every independent source that ever carried it has been
+destroyed or degraded below identifiability. A query is irrecoverable if any fact
+essential to it is. \emph{Observability:} in simulation, exactly decidable (ground
+truth known); in the field, certified by exhaustion of an enumerated source list,
+which is how forensic practice certifies unavailability~\cite{nist80086,casey2011}.
+\end{definition}
+
+\begin{definition}[Evidence Debt]
+\label{def:debt}
+Fix a schema $\Sch$, a corpus $\Corp(t)$, and a \emph{query workload} $\Qw$: a set
+of potential future queries $q$ with occurrence weights $w_q > 0$ (frequencies,
+probabilities, or scenario weights, declared explicitly). The \emph{evidence debt}
+of the estate at $t$ is the expected excess reconstruction burden induced by its
+deficits:
+\begin{align*}
+\ED(t) \;=\; & \sum_{q \in \Qw} w_q \,
+\Bigl[\, \mathbb{E}\,\ERC\bigl(q, \Corp(t)\bigr) \;-\;
+\mathbb{E}\,\ERC\bigl(q, \Corp^{*}(t)\bigr) \Bigr] \\
+& \;+\; \sum_{q \in \Qw} w_q \, \pi_q \, \Irr_q(t),
+\end{align*}
+where $\Corp^{*}(t)$ is the counterfactual \emph{ideal corpus}: every element and
+link key required by $\Sch$ for every change up to $t$, captured at change time and
+subject to no decay. This choice is deliberate and consequential: it attributes
+retention- and migration-driven loss of once-captured evidence to debt (as
+decay-created deficit, \cref{def:deficit}), because from the query's standpoint an
+expired record and a never-captured record are the same absence with different
+histories. $\Irr_q(t)$ indicates that $q$ is irrecoverable at $t$, and $\pi_q$ is
+the declared penalty weight of failing to answer $q$ at all. \emph{Observability:} estimable, not
+directly observable---the estimation problem is exactly what
+\cref{sec:metrics,sec:simulation,sec:field} address; the definition fixes what the
+estimators are estimators \emph{of}.
+\end{definition}
+
+Three features of \cref{def:debt} do argumentative work. First, debt is
+\emph{workload-relative}: an estate whose history will never be queried carries
+deficits but little debt; declaring $\Qw$ forces the (often implicit) organizational
+judgment about which contingencies matter into the open. Second, the excess-cost
+form makes the baseline explicit: even a complete corpus makes queries cost
+something; debt is only the part deferral added. Third, irrecoverability enters as a
+separate, penalty-weighted term rather than as an infinite cost, keeping $\ED$
+finite and decision-relevant (\cref{prop:writeoff}).
+
+\begin{definition}[Evidence-Debt Principal]
+\label{def:principal}
+The \emph{principal} of a deficit $\Def(x, t_x)$ is its contribution to $\ED(t_x)$
+at creation time---the excess expected cost were the workload queried immediately,
+while memory is fresh, sources are live, and identifiers are current.
+\emph{Observability:} estimable at change time from the deficit census and
+short-horizon reconstruction calibration.
+\end{definition}
+
+\begin{definition}[Evidence-Debt Interest]
+\label{def:interest}
+The \emph{interest} accrued on change $x$'s evidence position over $[t_x, t]$ is
+the growth of its contribution to $\ED$ beyond principal:
+$\mathcal{I}(x, t) = \mathrm{ED}\text{-contribution}(x, t) - \text{principal}(x)$.
+It has two decay-driven components, both are interest, and they must not be
+conflated with new borrowing: (i)~\emph{path decay}, the loss of reconstruction
+routes for elements already deficient at $t_x$; and (ii)~\emph{corpus decay}, the
+expiry or destruction of elements captured at $t_x$, which enlarges
+$\Def(x, t)$ over time per \cref{def:deficit}. The drivers of both are the same
+processes: retention expiry, record deletion, personnel
+departure~\cite{rigby2016}, resource ephemerality~\cite{burns2016}, identity and
+schema drift, vendor migration, and loss of correlation identifiers.
+\emph{Observability:} the decay processes are individually observable (retention
+policies are published~\cite{cloudtrail,ghdocs,nist80092}; turnover is known to HR;
+migrations are scheduled); \cref{sec:interest} shows how their superposition yields
+a computable cost-versus-age curve, and why it is not a compound rate.
+\end{definition}
+
+\begin{definition}[Evidence Liability]
+\label{def:liability}
+The \emph{liability} of the estate with respect to a specific contingency $q$ at $t$
+is the conditional realized burden if $q$ occurs at $t$: the actual reconstruction
+cost plus the consequence cost of unanswered or wrongly answered parts (regulatory
+exposure, prolonged outage, lost claims)~\cite{sedona2018,sox2002}.
+\emph{Observability:} realized liabilities are observable events (audit findings,
+incident duration attributable to archaeology); $\ED$ is their workload-weighted
+expectation, which is the standard relation between an expected cost and its
+realizations.
+\end{definition}
+
+The vocabulary now has the shape the brief demanded, with each term cashed out
+independently of the metaphor: \emph{deficit} is syntax (what is missing),
+\emph{debt} is expectation (what the missing is expected to cost),
+\emph{principal} is the at-creation component, \emph{interest} is the decay-driven
+growth, \emph{liability} is the per-contingency realization, and
+\emph{irrecoverability} is the boundary at which cost becomes loss.
+\Cref{sec:model} gives the machinery that connects them.

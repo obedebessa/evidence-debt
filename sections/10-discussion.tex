@@ -1,0 +1,126 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Attacking the Metaphor, Deliberately}
+\label{sec:disc-metaphor}
+
+A concept paper owes its readers the strongest case against itself. We therefore
+attack our own framing and report what survives. \emph{Where the financial analogy fails:} there is no
+creditor and no contract---nobody agreed to the terms, and the ``lender'' (future
+circumstance) never negotiates; the interest is not a rate but a stochastic
+schedule of cliffs and hazards (\cref{prop:steps}), so compounding
+intuitions---and any metric built on them---mislead (\cref{met:interest} was
+rejected on exactly this ground); repayment is not fungible---effort, error, and
+loss (\cref{fnd:effort,fnd:false,fnd:redundancy}) are different currencies that do
+not net against each other; and write-offs are mandatory and world-imposed
+(\cref{prop:writeoff}), where financial write-offs are creditor choices.
+\emph{Where the analogy earns its keep:} the deferral structure is real (a present
+choice with a later, larger, contingent cost); the principal/carrying-cost
+decomposition marks a real operational distinction (capture-time gaps versus
+decay-driven growth) with distinct remedies (capture discipline versus retention
+and export policy); and ``debt'' correctly imports the management insight that the
+stock must be measured and budgeted, not merely deplored.
+
+\emph{The removal test}: delete the word ``debt'' and every construct still
+stands---deficit (\cref{def:deficit}) is a syntactic census; reconstruction cost
+(\cref{def:rec}) is a measured quantity; decay schedules and half-lives
+(\cref{sec:interest}) are computed from published retention and turnover;
+irrecoverability (\cref{def:irrec}) is a decidable/certifiable state; and the
+expected-excess-cost aggregate (\cref{def:debt}) is an ordinary expected value that
+could as well be called \emph{reconstruction exposure}. We embrace that reading:
+the \emph{measured} quantity is reconstruction exposure, and a skeptic may use
+that vocabulary throughout without loss of formal content.
+
+What, then, does the debt framing add that exposure does not? Exposure language
+frames the quantity as environmental---a risk one has, like weather. The debt
+framing makes one further, contentful commitment: it binds the aggregate to
+\emph{identifiable, dated, attributable deferral decisions}---this change, shipped
+ticketless, under this pressure, by this team---and thereby licenses management
+machinery that exposure language does not naturally carry: per-decision
+registration at creation time (the register of \cref{sec:disc-management}, with
+backfill due dates set inside the cheapest-path window); attribution of the
+aggregate to controllable practices P1--P8 rather than to fate; and the
+inflow/stock separation (\cref{met:growth} versus interest) that tells an
+organization whether it is borrowing faster or merely aging. These are decisions
+and accountabilities, not measurements; the measurement structure is
+metaphor-free, and the metaphor's residual work is to keep the human origin of
+the exposure attached to the number. That is a naming choice we defend as
+useful---while conceding, per the analysis above, that every quantitative
+intuition imported from finance (rates, compounding, refinancing) must be checked
+against the model and mostly fails.
+
+Circularity was the other standing risk, and the definitional order of
+\cref{sec:definitions} was built against it: deficit is defined without reference
+to cost (syntax against a declared schema); cost is defined without reference to
+deficit (measured effort of answering queries); debt relates the two through an
+explicit counterfactual; and the schema- and workload-relativity are declared
+inputs rather than smuggled conclusions. What \emph{is} irreducibly judgmental
+---the choice of $\Sch$ and $(w_q, \pi_q)$---is surfaced as a governance decision,
+not hidden in a formula (\cref{sec:model-notformula}).
+
+\subsection{Relativity of the Construct}
+\label{sec:disc-relativity}
+The sharpest structural limitation is not the metaphor but the relativity:
+$\ED$ is defined against a declared schema $\Sch$ and a declared workload
+$(w_q, \pi_q)$, both controlled by the party being measured. An estate can reach
+$\ED \approx 0$ by declaring a weak schema or a sparse workload, and
+\cref{fnd:ed} showed concretely how the penalty declaration reshapes what the
+number says. We therefore state plainly: what is measurable
+\emph{inter-subjectively} is the ingredient vector---EDR against a published
+schema, measured ERC at stated confidence, the decay schedule, and the
+irrecoverability constructs---while $\ED$ itself is an accounting quantity
+relative to published governance inputs, comparable across estates only under
+shared reference declarations. To make comparison possible rather than merely
+honest, we propose (as future standardization, not as this paper's result) a
+\emph{reference declaration}: the six-interrogative schema of
+\cref{sec:schema-informal} as $\Sch_{\mathrm{ref}}$, and a workload
+$\Qw_{\mathrm{ref}}$ parameterized by public covariates---per-service audit
+queries at a fixed annual rate, incident queries at the estate's measured
+incident rate, one recovery query per service---with penalty weights published
+alongside any reported figure. This is the same discipline financial accounting
+imposes through reporting standards: the number is meaningful because the rules
+for producing it are shared, not because it is observer-independent.
+
+\subsection{Explanatory and Predictive Value}
+The concept must be useful beyond naming. Its explanatory content: it unifies
+under one mechanism phenomena currently discussed separately---why incidents on
+old systems take longer to diagnose (interest), why audits of healthy systems fail
+(deficit despite health), why tool migrations feel like organizational amnesia
+(bulk path death), why the departure of one engineer disproportionately damages
+some services (human path as last survivor). Its predictive content is concrete
+and falsifiable: cost steps aligned to retention/migration schedules (IH1),
+departure-boundary cost multiples (IH2), memory as modal final path (IH3), and
+the simulation-grounded expectations that effort inflation precedes failure and
+that dense, fragmented estates pay more in false history than in missing history
+(\cref{fnd:effort,fnd:false}). \Cref{sec:field} specifies the refutation
+conditions; a concept that survives them will have earned its place, and one that
+does not will have been usefully eliminated.
+
+\subsection{Management Implications (Proposals)}
+\label{sec:disc-management}
+Stated as proposals, not findings. \emph{Evidence-debt register}: like a TD
+register~\cite{seaman2011,ernst2015}, an explicit ledger of known deficits with
+principal estimates and decay deadlines---P2 break-glass changes, for instance,
+entered at creation with a backfill due date inside the cheapest-path window
+(\cref{sec:interest-worked}). \emph{Retention as governance, not default}:
+\cref{sec:interest-halflife}'s observation that half-lives are set by unexamined
+vendor defaults makes retention review the highest-leverage, lowest-cost
+intervention. \emph{Backfill sprints as refinancing}: deliberate reconstruction of
+high-value history while paths are cheap---though \cref{fnd:false} warns that late
+backfill in dense estates risks writing confident fiction into the record, so
+backfilled facts should carry confidence annotations. \emph{Deferral budgets}:
+if evidence capture is to be skipped under pressure, the skip should be a recorded
+decision---the debt family's central lesson~\cite{kruchten2012} transposed: unmanaged
+debt is not the debt you took on but the debt you never knew you took on.
+
+\subsection{Limitations}
+Beyond the simulation threats (\cref{sec:sim-threats}): the framework prices
+reconstruction, not the first-order value of evidence for real-time operations
+(alerting, debugging), which observability already treats~\cite{majors2022}; the
+workload $\Qw$ is a declared judgment and organizations may declare it
+self-servingly---the discipline is publishing it; capture itself has costs
+(effort, storage, privacy exposure under data-protection law~\cite{gdpr,
+nist80092}) that our model takes as given rather than optimizing, so the full
+decision problem---optimal capture under cost and legal constraint---remains open;
+and all empirical content here is synthetic, a boundary we have marked at every
+claim.

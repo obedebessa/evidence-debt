@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this artifact, please cite it as below."
+type: software
+title: "Evidence Debt: Reproducibility Package"
+version: 1.0.0
+date-released: 2026-08-07
+authors:
+  - family-names: "Bessa Rocha da Silva"
+    given-names: "Obede"
+    affiliation: "Independent Researcher, Clermont, Florida, United States"
+license: MIT
+repository-code: "https://github.com/obedebessa/evidence-debt"
+url: "https://github.com/obedebessa/evidence-debt"
+abstract: >
+  Manuscript source, deterministic simulation code, canonical synthetic data,
+  programmatically generated tables, and field-study protocol for measuring
+  accumulated reconstruction cost caused by missing operational evidence.
+keywords:
+  - "evidence debt"
+  - "operational evidence"
+  - "record linkage"
+  - "cloud-native systems"
+  - "reproducibility"
