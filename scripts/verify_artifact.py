@@ -54,6 +54,9 @@ def main() -> int:
     if not required.issubset(keys):
         raise SystemExit("required headline-result cells are missing")
 
+    subprocess.run(
+        [sys.executable, "scripts/verify_empirical_snapshot.py"], cwd=ROOT, check=True
+    )
     print("PASS: all non-timing outputs and generated tables reproduced exactly")
     return 0
 

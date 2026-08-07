@@ -1,7 +1,7 @@
 # Evidence Debt
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21841441.svg)](https://doi.org/10.5281/zenodo.21841441)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21842021.svg)](https://doi.org/10.5281/zenodo.21842021)
 
 Reproducibility package for the manuscript:
 
@@ -10,15 +10,17 @@ Reproducibility package for the manuscript:
 > Obede Bessa Rocha da Silva — Independent Researcher
 
 The package contains the complete LaTeX source, a dependency-free simulation,
-canonical synthetic outputs, programmatically generated tables, and a field
-protocol. Version 1.0.0 incorporates the full simulated Reviewer #2 revision.
+canonical synthetic outputs, a frozen public-repository census, programmatically
+generated tables, and a field protocol. Version 1.1.0 adds the bounded Argo CD
+observation and an explicit economic-accounting chain.
 
 ## Evidence boundary
 
 The artifact establishes that the proposed constructs are computable and
-discriminating in a seeded synthetic environment. It includes pairwise,
-removal, sensitivity, and single-knob density arms. It does **not** report
-production magnitudes, an industrial case study, or external replication.
+discriminating in a seeded synthetic environment. The Argo CD census establishes
+only that a declared intent-link deficit occurs in public repository evidence. It
+does **not** report production reconstruction costs, an industrial case study, or
+external replication.
 
 ## Repository map
 
@@ -27,6 +29,7 @@ production magnitudes, an industrial case study, or external replication.
 | `main.tex`, `sections/`, `figs/`, `refs.bib` | Complete manuscript source |
 | `code/experiment.py` | Synthetic generator, degradation arms, reconstruction, and aggregation |
 | `data/` | Canonical raw/aggregated results and generated LaTeX tables |
+| `empirical/` | Frozen Argo CD sample, generated counts, and collector |
 | `reviewer2-response.md` | Adversarial review and point-by-point disposition |
 | `scripts/verify_artifact.py` | Re-execution and deterministic-result verification |
 | `output/pdf/` | Verified compiled manuscript |
@@ -53,7 +56,10 @@ python3 scripts/verify_artifact.py
 ```
 
 The verifier preserves the canonical outputs in memory, re-executes the study,
-and compares all non-timing fields plus the generated table.
+and compares all non-timing fields plus the generated table. It also checks that
+the frozen repository snapshot, CSV summary, and LaTeX macros agree. Live
+recollection requires `gh auth login` and is intentionally separate because public
+repository state can change.
 
 ## Compile the manuscript
 
@@ -75,8 +81,9 @@ tectonic -X compile main.tex
 ## Citation and release
 
 Citation metadata is provided in `CITATION.cff`; Zenodo deposit metadata is in
-`.zenodo.json`. Version 1.0.0 is permanently archived at
-<https://doi.org/10.5281/zenodo.21841441>.
+`.zenodo.json`. Version 1.1.0 is archived at
+<https://doi.org/10.5281/zenodo.21842021>; the version-independent concept DOI is
+<https://doi.org/10.5281/zenodo.21841440>.
 
 ## License
 
