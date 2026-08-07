@@ -1,11 +1,60 @@
-\section{Field-Study Protocol (Not Executed)}
+\section{Repository Observation and Field-Study Protocol}
 \label{sec:field}
 
-The simulation validates constructs; only field study can establish real-world
-magnitudes and the economic significance of the central claim. We specify the
-protocol at implementable detail so that its execution---by us or others---produces
-comparable numbers. Design follows standard guidance for case study and measurement
-research in software engineering~\cite{runeson2009,wohlin2012}.
+The simulation validates constructs. A bounded public-repository observation can
+establish that named deficit classes occur outside the generator, but only
+reconstruction drills can establish real-world cost magnitudes and economic
+significance. We therefore report one executed observation, then specify the full
+protocol---still not executed---at implementable detail. Design follows standard
+guidance for case study and measurement research in software
+engineering~\cite{runeson2009,wohlin2012}.
+
+\subsection{Bounded Public-Repository Census (Executed)}
+We executed a read-only census of the public
+\href{https://github.com/argoproj/argo-cd}{\texttt{argoproj/argo-cd}} repository,
+frozen at 2026-08-07 15:30 UTC. The sample is the 200 most recently updated merged
+pull requests before the cutoff and the 30 most recent published, non-draft
+releases. Under a deliberately narrow repository schema $\Sch_{\mathrm{repo}}$,
+intent evidence is (i)~a machine-resolvable closing-issue link or (ii)~an explicit
+issue reference in the PR title/body; authorization evidence is an
+\texttt{APPROVED} GitHub review object; and release lineage is an explicit PR or
+compare reference in release notes. These are machine-testable public proxies, not
+the six-interrogative schema and not a judgment about the project's internal
+processes.
+
+\input{empirical/argocd_macros.tex}
+\begin{table}[t]
+\centering
+\caption{Public Argo CD evidence census at the frozen cutoff}
+\label{tab:argocd-census}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Observable absence & Count & Share \\
+\midrule
+No closing-issue link & \ArgoNoIssue/\ArgoPRTotal & \ArgoNoIssuePct \\
+No closing link or explicit issue reference & \ArgoNoIssueReference/\ArgoPRTotal & \ArgoNoIssueReferencePct \\
+No approved-review object & \ArgoNoApproval/\ArgoPRTotal & \ArgoNoApprovalPct \\
+Release without PR/compare reference & \ArgoNoReleaseLineage/\ArgoReleaseTotal & \ArgoNoReleaseLineagePct \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\Cref{tab:argocd-census} shows a class-specific result: \ArgoNoIssue\ of
+\ArgoPRTotal\ merged PRs had no machine-resolvable closing-issue link, and
+\ArgoNoIssueReference\ still had neither that link nor an explicit issue reference.
+By contrast, every sampled PR retained an approved-review object and every sampled
+release retained an explicit change reference. The negative controls matter: the
+analyzer does not merely label all public evidence incomplete. These observations
+are not presented as evidence-debt measurements, but as empirical evidence that the
+deficit classes defined in \cref{def:deficit} naturally occur in a real repository.
+
+The census has strict limits. A self-contained PR may document intent adequately;
+an issue may exist in a private or external tracker; approval may be encoded outside
+GitHub; and present API state cannot prove that a link was once present and later
+lost. The sample is recent and purposive, not random. It therefore supports
+\emph{occurrence}, not prevalence, organizational negligence, reconstruction cost,
+or financial magnitude. The collector, frozen minimal data, and generated counts
+are released in \texttt{empirical/}.
 
 \subsection{Instrument 1: Deficit Census}
 A static analyzer over an organization's stores (forge, ITSM, CI, registry, CD,

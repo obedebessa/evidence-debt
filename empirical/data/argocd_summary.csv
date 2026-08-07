@@ -1,0 +1,7 @@
+measure,count,denominator,percent
+Merged PRs without closing-issue link,161,200,80.5
+Merged PRs without closing link or explicit issue reference,152,200,76.0
+Merged PRs without approved review object,0,200,0.0
+Merged PRs without either artifact,0,200,0.0
+Releases without explicit PR/compare reference,0,30,0.0
+Releases whose target_commitish is symbolic,30,30,100.0
