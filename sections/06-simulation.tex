@@ -4,7 +4,7 @@
 We now exercise the framework in the one setting where ground truth is available
 by construction: a synthetic estate whose complete history is generated, then
 degraded under experimental control. The study is executed, not merely designed;
-every number below was produced by the released artifact ($\approx$560 lines of
+every number below was produced by the accompanying artifact ($\approx$560 lines of
 dependency-free Python), is deterministic given the published seeds, and the
 results table is generated programmatically from the run outputs. Its epistemic
 role is stated with care, because a simulation whose apparatus is written by the
@@ -14,7 +14,7 @@ by design choices that mirror real toolchains, whose value is quantification and
 whose evidential force is tested by \emph{removal arms} in which the choice is
 switched off; and (ii)~\emph{falsifiable tests}: predictions that the apparatus
 does not build in and that the data could have refuted. The study validates
-construct computability end to end---including $\ED(t)$ itself
+construct computability end to end---including $\ED_\rho(t)$
 (\cref{sec:sim-workload})---and estimates no real-world magnitudes.
 
 \subsection{Apparatus}
@@ -29,7 +29,8 @@ degrader removes a controlled fraction $p$ of one or more evidence classes; an
 algorithmic reconstructor rebuilds each chain from surviving records (exact key
 joins, then redundant-key paths, then heuristic linkage); scoring against ground
 truth yields coverage, false joins, two irrecoverability constructs, invariant
-effort, and $\ED$ under a declared workload.}
+effort, and the effort/error/abstention decomposition of $\ED_\rho$ under a declared
+workload.}
 \label{fig:experiment}
 \end{figure}
 
@@ -48,8 +49,8 @@ that relationship too.
 \subsubsection{Factors and arms}
 The main factorial crosses \emph{degradation class}---intent links, approval
 links, correlation identifiers, whole-record deletion, timestamps, the
-\emph{pairwise} arm (correlation identifiers $+$ timestamps, which instantiates
-the premise of \cref{prop:superadd}: neither class alone destroys records), and
+\emph{pairwise} arm (correlation identifiers $+$ timestamps, which exercises the
+complementary direct-key/inferential-path mechanism of \cref{prop:superadd}), and
 an \emph{all-classes} arm---with \emph{level}
 $p \in \{0,1,5,10,20,40\}\%$ and \emph{activity profile} (sparse: 50
 chains/service, 180 days, 12 actors; dense: 150 chains/service, 90 days, 6
@@ -65,16 +66,17 @@ For each configuration record, the reconstructor rebuilds the chain backward:
 surviving exact keys and redundant key paths first (implemented as index
 lookups and charged \emph{zero} effort, so that effort does not depend on
 incidental data-structure choices), then heuristic linkage (same-service
-candidates within a 48-hour window, actor agreement where applicable; unique
-candidate accepted; multiple candidates resolved nearest-in-time---a realistic
-policy that can produce \emph{false joins}). Effort is counted only at
+candidates within a 48-hour window, actor agreement where applicable). A unique
+candidate is accepted; among multiple candidates the nearest is retained only as
+an internal diagnostic candidate and the policy abstains. False joins can still
+occur when a unique visible candidate is not the true parent. Effort is counted only at
 heuristic decision points, as two implementation-invariant quantities: the
 number of links requiring non-exact resolution (\emph{fallback links}) and the
 candidate records examined there.
 
 \subsubsection{Scoring: two irrecoverability constructs}
-Against ground truth we score \emph{link coverage}, \emph{false-join rate}
-(incorrect/accepted), \emph{chain coverage}, and two distinct irrecoverability
+After policy acceptance, ground truth scores \emph{supported-correct link coverage},
+\emph{accepted-wrong rate} (incorrect/accepted), \emph{chain coverage}, and two distinct irrecoverability
 constructs whose separation \cref{sec:model-graph} demands: \emph{record loss}
 (a required record exists in no store---the destroyed-source clause of
 \cref{def:irrec}) and \emph{identifiability-based irrecoverability}
@@ -87,17 +89,48 @@ noted for reusers: five links are scored on the recovered parent's key, while
 the approval link---whose evidential record sits on the child side---is scored
 on the approval record's key; the artifact documents the orientation.
 
-\subsubsection{$\ED$ under a declared workload}
+\subsubsection{$\ED_\rho$ under a declared workload}
 \label{sec:sim-workload}
 To instantiate \cref{def:debt} end to end, we declare a synthetic workload: one
-full-chain audit query per running configuration, unit weight; resolution cost
-$= 1$ unit per fallback link $+\,0.01$ per candidate examined; write-off
-penalty $\pi = 50$ units per identifiability-irrecoverable link. The complete
-corpus $\Corp^{*}$ resolves every link exactly, so its cost is zero and
-measured cost is excess cost. The declarations are arbitrary in magnitude and
+six-link audit workload per running configuration, represented as six required-link
+subqueries with unit weight; resolution cost
+$= 1$ unit per fallback link $+\,0.01$ per candidate examined; wrong-answer
+penalty $\lambda=25$ units per returned false link; and policy-abstention penalty
+$\pi = 50$ units per link on which $\rho$ abstains. Before ground truth is
+consulted, the accompanying policy sets $A_\rho=1$ for exact/redundant joins and for a
+unique heuristic candidate; it sets $A_\rho=0$ for missing or ambiguous candidates.
+An ambiguous nearest-time candidate may be carried internally to continue the
+diagnostic search, but it and all dependent links remain abstentions unless an
+independent exact path restores confidence. Acceptance propagates along the chain.
+Only after this decision does scoring consult ground truth:
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Policy decision & Ground truth & Outcome \\
+\midrule
+accept & correct & $S$ (supported-correct) \\
+accept & incorrect & $W$ (accepted-wrong) \\
+abstain & either & $N$ (no answer certified by $\rho$) \\
+\bottomrule
+\end{tabular}
+\end{center}
+Thus a lucky but unaccepted guess remains $N$, a returned wrong accepted link incurs
+$\lambda$ only, and an abstention incurs $\pi$ only. This is policy-abstention
+exposure, not a claim of physical write-off. The physical identifiability-
+irrecoverability construct is reported separately and does not determine $S/W/N$
+retroactively. The complete corpus
+$\Corp^{*}$ resolves every link exactly, so its cost, error probability, and
+irrecoverability probability are zero. For this construct-validation study, the
+declared admissible strategy class is the singleton accompanying reconstructor, so its
+measured $\ED_\rho$ equals $\ED^{\star}$ within that class. The same fixed policy is
+used for effort, error, and abstention scoring in actual and ideal corpora; physical
+IRR is computed independently from the closed-world path inventory.
+Candidate search is charged whether it
+ends in an acceptable answer or certifies irrecoverability, consistently with
+\cref{def:rec}. The declarations are arbitrary in magnitude and
 declared precisely because \cref{def:debt} requires them---the point is the
-demonstrated pipeline from census to a computed $\ED(t)$, and the sensitivity
-of $\ED$'s composition to the declarations is itself a result
+demonstrated pipeline from census to a computed $\ED_\rho(t)$, and the sensitivity
+of its composition to the declarations is itself a result
 (\cref{fnd:ed}).
 
 \subsection{Demonstrations, Predictions, and Results}
@@ -105,109 +138,128 @@ of $\ED$'s composition to the declarations is itself a result
 
 \begin{table*}[t]
 \centering
-\caption{Selected Results, Generated Programmatically from the Run Outputs\\(Mean over 20 Seeds; SD in Parentheses). Cov = Link Coverage,\\FJ = False-Join Rate, Irr = Identifiability-Based Irrecoverable Chains,\\FB = Fallback Links per Chain, ED = Computed Debt (Units, \Cref{sec:sim-workload})}
+\caption{Selected Results, Generated Programmatically from the Run Outputs
+(Means over 20 Seeds; SDs Are in the Accompanying CSV). $S/W/N$ = Fractions of All
+Required Links; FRR = $W/(S+W)$; IRR$_{ch}$ = Physically Irrecoverable Chains;
+ERC = Declared Effort Units; $\ED_\rho$ = Computed Policy-Specific Burden}
 \label{tab:results}
-\footnotesize
+\scriptsize
 \input{data/table_full}
+\par\vspace{2pt}
+\begin{minipage}{0.98\textwidth}\footnotesize
+\emph{Note:} $S+W+N=1$ exactly. IRR is a physical state displayed at chain level;
+$N$ is a policy outcome displayed at link level. The abstention component of
+$\ED_\rho$ is $N\pi$ and is not IRR$\times\pi$.
+\end{minipage}
 \end{table*}
 
 \begin{figure*}[t]
 \centering
 \input{figs/fig-results}
 \caption{Reconstruction outcomes versus evidence degradation (means over 20
-seeds; SDs below marker size except where bars shown). (a)~Link coverage,
-dense: key-stripping classes stay near ceiling; the pairwise arm
-(ids$+$timestamps) departs from the correlation-ids arm superadditively
+seeds; SDs below marker size except where bars shown). (a)~Supported-correct
+link coverage, dense: correlation-id loss triggers policy abstention; the paired
+path census, not visual curve separation, tests \cref{prop:superadd}
 (\cref{fnd:superadd}); record deletion and the all-classes arm collapse.
-(b)~False-join rate in the all-classes arm: density roughly triples silent
-error at fixed degradation. (c)~The two irrecoverability constructs, dense:
+(b)~Accepted-wrong rate in the all-classes arm; profile differences are descriptive,
+because the single-knob density test is mixed (\cref{fnd:false}). (c)~The two irrecoverability constructs, dense:
 record loss in the all-classes arm tracks the source-survival combinatorics
 $1-(1-p)^{6}$ (consistency check of the record-loss component, not a
 validation of \cref{def:irrec}); identifiability-based irrecoverability under
 pure key stripping is large although record loss is identically zero---the
-constructs measure different things. (d)~Computed $\ED$ under the declared
-workload of \cref{sec:sim-workload}, dense.}
+constructs measure different things. (d)~Computed $\ED_\rho$ under the declared
+workload of \cref{sec:sim-workload}, dense, including effort, error, and
+policy-abstention channels.}
 \label{fig:results}
 \end{figure*}
 
-\Cref{tab:results} and \cref{fig:results} summarize; released data contain all
+\Cref{tab:results} and \cref{fig:results} summarize; accompanying data contain all
 cells. Throughout, the largest per-cell coverage SD across the main factorial
 is 1.9 points (sparse, all-classes, $p{=}10\%$).
 
-\begin{finding}[Demonstration with removal test: redundancy absorbs key loss;
+\begin{finding}[Demonstration with removal test: redundancy protects accepted reconstruction;
 deletion defeats it]
 \label{fnd:redundancy}
-At 40\% degradation of any single key class, link coverage remains at
-95.3--99.1\% (dense; 98.8--99.9\% sparse) except correlation identifiers
-(84.0\% dense, 96.0\% sparse); whole-record deletion at the same rate collapses
-coverage to 32--33\% with 95\% of chains suffering record loss. The plateau is
+At 40\% degradation, supported-correct coverage is 97.2\% for intent-link
+stripping, 93.6\% for approval-link stripping, and 55.4\% for correlation-id
+stripping in the dense profile; whole-record deletion leaves only 29--33\%
+coverage, with 95\% of chains suffering record loss. The plateau for the first
+two classes and the collapse for correlation ids reflect the preregistered policy's
+refusal to certify ambiguous candidates. Redundancy is
 partly a product of the generator's (realistic) redundancy, and the removal arm
 shows how much: with redundancy disabled, the correlation-ids arm at
-$p{=}40\%$ (dense) falls from 84.0\% to 72.6\% coverage, identifiability-based
-irrecoverability rises from 65.3\% to 84.7\% of chains, and computed $\ED$
-rises 1.6$\times$ (49.1 to 80.9 units). Redundancy is thus not an artifact to
+$p{=}40\%$ (dense) falls from 55.4\% to 28.3\% supported coverage, identifiability-based
+irrecoverability rises from 65.3\% to 84.7\% of chains, and computed $\ED_\rho$
+rises 1.6$\times$ (136.2 to 219.2 units). Redundancy is thus not an artifact to
 apologize for but a quantified protective factor---and its protection is
 bounded: no redundancy setting rescues deleted records
 (\cref{prop:plateau,def:irrec}).
 \end{finding}
 
-\begin{finding}[Falsifiable test passed: the Proposition-2 pairwise arm is
-superadditive; the all-classes arm is deletion-dominated and subadditive]
+\begin{finding}[A paired path census tests Proposition 2 directly]
 \label{fnd:superadd}
-The pairwise arm (correlation identifiers $+$ timestamps) instantiates
-\cref{prop:superadd}'s premise: neither class alone destroys records (record
-loss is 0.000 in every such cell). Timestamps alone have \emph{zero} effect at
-every level in both profiles; correlation-ids alone cost 16.0 points of
-coverage at $p{=}40\%$ (dense). Their combination costs \textbf{35.2} points
-(dense)---more than double the sum---and \textbf{32.6} versus a sum of 4.0
-points (sparse), an eight-fold superadditive excess: stripped keys force
-heuristic recovery exactly where nulled timestamps have destroyed the
-discriminators heuristics need. This is the paper's central interaction
-prediction, it could have failed (redundant digest paths might have absorbed
-the combination), and it did not. By contrast, the all-classes arm is
+Zero record loss alone is not evidence that an acceptable path survives.
+Timestamps alone have zero effect at every level because exact keys do not consult
+them. At $p{=}40\%$, correlation-id stripping loses 44.6 supported-coverage points
+in the dense profile and 20.0 in the sparse profile; adding timestamp nulling changes
+those losses to 44.8 and 36.1 points, respectively. The aggregate interaction is
+therefore profile-dependent rather than a universal headline result.
+
+To test the proposition's actual object, a separate paired diagnostic samples one
+identifier mask and one timestamp mask per generated estate, applies each alone
+and their union to identical records, inventories acceptable paths per required
+link, and counts links for which both single degradations retain a path but the
+union retains none. The accompanying \texttt{pairwise\_path\_diagnostic.csv} therefore
+tests path survival rather than substituting record survival. At $p{=}40\%$, both
+single arms retain an acceptable path for 93.5\% of sparse and 84.4\% of dense
+links; the union alone eliminates the last acceptable path for 6.06\% and 0.41\%
+of all links, respectively (6.48\% and 0.48\% conditional on the premise). Thus
+the exact Proposition-2 event occurs, but it is not numerically interchangeable
+with the much larger coverage interaction. By contrast, the all-classes arm is
 \emph{sub}additive in coverage relative to the sum of its five singles (e.g.,
 16.1 versus 16.9 points at $p{=}5\%$, dense) and its losses are dominated by
 the deletion component (15.0 of those points): once a record is deleted, the
 additional loss of its keys or timestamps cannot be charged twice. Interaction
-structure, not headline collapse, is where the model earns or loses credit,
-and it behaves as \cref{prop:superadd} says: superadditivity arises between
-classes that disable \emph{disjoint recovery paths}, and saturates where one
-class destroys the nodes outright.
+structure, not headline collapse, is where the model earns or loses credit:
+superadditivity can arise between classes that disable complementary recovery
+paths, and saturates where one class destroys the nodes outright.
 \end{finding}
 
-\begin{finding}[Effort precedes failure; correctness outruns confidence]
+\begin{finding}[Effort rises before supported coverage collapses]
 \label{fnd:effort}
 Under the invariant accounting, baseline effort is zero (every link resolves
-exactly). At $p{=}40\%$ correlation-id stripping (dense), 0.97 of 6 links per
-chain require heuristic resolution at 146 candidate examinations per chain,
-while coverage is still 84\%; approval-link stripping puts 0.40 links per
-chain into fallback at 95.3\% coverage. The estate's reconstruction economics
-degrade well before its dashboards would: success-rate metrics see 95\%,
-while a growing fraction of history is being recovered by search rather than
-by lookup. The same cells expose a subtler and operationally important gap:
-identifiability-based irrecoverability at that cell is 65.3\% of chains
-although the reconstructor's answers are 84\% correct---nearest-in-time
-guessing is right far more often than it can \emph{certify}. Reconstructed
-history under deficit is thus not merely lossy; it is unauditable even when
-correct, which is precisely the confidence-accounting problem
+exactly). At $p{=}10\%$ correlation-id stripping (dense), 0.14 of 6 links per
+chain require fallback at 20.8 candidate examinations per chain while supported
+coverage remains 92.9\%; approval-link stripping at $p{=}40\%$ puts 0.40 links per
+chain into fallback at 60.2 examinations while coverage remains 93.6\%.
+The estate's reconstruction economics degrade before coarse success dashboards,
+while a growing fraction of history is being searched rather than joined by key.
+Ambiguous internal candidates are not counted as answers: the policy abstains
+before ground truth, which is precisely the confidence-accounting discipline
 \cref{sec:metrics} flags for ERC reporting.
 \end{finding}
 
-\begin{finding}[Falsifiable test passed: density scales silent error, isolated
-on a single knob]
+\begin{finding}[Accepted wrong answers occur; the isolated density trend is mixed]
 \label{fnd:false}
-Accepted-but-wrong links reach 14.5\% (sparse) and 47.9\% (dense) of accepted
-links in the all-classes arm at $p{=}40\%$, and 61.2\% (dense) under pure
+Accepted-but-wrong links reach 12.7\% (sparse) and 27.5\% (dense) of accepted
+links in the all-classes arm at $p{=}40\%$, and 23.0\% versus 30.3\% under pure
 record deletion. Because the sparse/dense profiles bundle three parameters,
 the single-knob sweep varies chains-per-service alone (50/100/150; actors and
-window fixed) at $p{=}10\%$ all-classes: the false-join rate rises
-10.1\% $\to$ 16.1\% $\to$ 19.5\% while coverage and irrecoverability stay flat
-($73.6 \to 72.2\%$; $57.0 \to 58.7\%$). Ambient activity density degrades
-specifically the \emph{error} channel, as linkage theory
-predicts~\cite{fellegi1969}---and as observed in the wild in bug-link datasets,
+window fixed) at $p{=}10\%$ all-classes. The accepted-wrong rate is
+7.9\% $\to$ 9.9\% $\to$ 9.6\%, while supported coverage declines
+72.2\% $\to$ 70.6\% $\to$ 69.0\%. The preregistered monotonic density prediction
+is therefore not cleanly supported: the bundled-profile contrast cannot be given a
+causal density interpretation. Mechanistically, greater density has competing
+effects under this policy: it creates more ambiguous candidate sets that move links
+from the accepted denominator into $N$, while the remaining unique candidates can
+still be wrong; exact and redundant joins are unchanged. FRR therefore conditions
+on a selected, density-dependent denominator, so monotonicity was not entailed and
+the finite sweep did not establish it. The experiment still establishes that accepted
+false reconstruction occurs, as linkage theory permits~\cite{fellegi1969} and as
+observed in the wild in bug-link datasets,
 where heuristic linkage produced systematically biased
-corpora~\cite{bird2009,bachmann2010}. False joins are the most dangerous
-repayment currency: they produce a confident, wrong account of history.
+corpora~\cite{bird2009,bachmann2010}. Accepted false joins are the most dangerous
+policy-burden outcome: they produce a confident, wrong account of history.
 \end{finding}
 
 \begin{finding}[The two irrecoverability constructs diverge as the model
@@ -228,20 +280,44 @@ timestamps), the null result that makes the pairwise superadditivity of
 asset whose value is realized only when keys fail.
 \end{finding}
 
-\begin{finding}[$\ED$ computed end to end; its composition is
+\begin{table*}[t]
+\centering
+\caption{Consequence-Weight Sensitivity of $\ED_\rho$ (Dense Profile,
+$p{=}40\%$, Mean over 20 Seeds). Top: Representative $\pi$ Slices at
+$\lambda{=}25$; Each Cell Is Effort/Error/Abstention/Total with Descending Rank.
+Bottom: Highest-Debt Arm and Total on the Joint $\lambda/\pi$ Grid. The Complete
+Six-Slice Table and All 175 Arm-Level Grid Rows Are in the Artifact.}
+\label{tab:pi-sensitivity}
+\footnotesize
+\input{data/table_pi_sensitivity_compact}
+\par\vspace{4pt}
+\input{data/table_weight_sensitivity}
+\end{table*}
+
+\begin{finding}[$\ED_\rho$ computed end to end; its composition is
 declaration-sensitive]
 \label{fnd:ed}
-Under the declared workload, $\ED$ per configuration rises from 0 at baseline
-to 191 units (dense, all-classes, $p{=}40\%$), with the full census-to-debt
-pipeline of \cref{prop:reduction} exercised in code. Decomposition is
-instructive: at every non-trivial level the write-off term dominates the
-effort term by an order of magnitude or more (e.g., 51.5 of 53.5 units at
-$p{=}10\%$, dense), i.e., under this declaration the economic mass of evidence
-debt sits in irrecoverable history, not in reconstruction labor. That
-conclusion inverts if the declared penalty $\pi$ is small relative to effort
-costs---which is not a weakness of the construct but its content:
-\cref{def:debt} makes the workload-and-penalty judgment an explicit input, and
-the simulation shows exactly how the judgment propagates
+Under the declared workload, $\ED_\rho$ per configuration rises from 0 at baseline
+to 230.0 units (dense, all-classes, $p{=}40\%$), with the full census-to-debt
+pipeline of \cref{prop:reduction} exercised in code. The generated outputs now
+decompose all three policy-burden currencies: finite attempt effort, penalties for returned
+wrong links, and abstention exposure for links lacking a certifiable answer under
+$\rho$. At that endpoint the components are 3.3 effort, 11.7 error, and 215.1 abstention
+units; at $p{=}10\%$ they are 1.9, 6.1, and 86.0 (94.0 total). Accepted-error
+exposure remains nonzero, while abstention dominates under the declared policy.
+The separately reported physical IRR must not be substituted into this computation.
+\Cref{tab:pi-sensitivity} recomputes all seven degradation arms at the dense
+$p{=}40\%$ endpoint for $\pi\in\{0,1,10,25,50,100\}$ while holding
+$\lambda{=}25$. The table reports effort, error, abstention, and total for every
+arm and tested penalty. At $\lambda=25$, Delete ranks above All for
+$\pi\in\{0,1\}$, while All leads for $\pi\in\{10,25,50,100\}$.
+The joint grid shows the boundary also moves with $\lambda$: Delete leads all
+$\pi=0$ cells and several high-$\lambda$/low-$\pi$ cells; All dominates the
+high-$\pi$ region. Thus any ranking claim is contingent on both consequence
+weights. No claim is made outside the tested grid. This declaration sensitivity
+is not hidden inside an index:
+\cref{def:debt} exposes it as a workload judgment, and the generated
+\texttt{pi\_sensitivity.csv} and \texttt{weight\_sensitivity.csv} preserve every computed component
 (\cref{sec:disc-relativity}).
 \end{finding}
 
@@ -250,14 +326,14 @@ the simulation shows exactly how the judgment propagates
 Beyond the redundancy-removal and density-sweep arms already reported:
 narrowing the heuristic window to 24 hours---\emph{below} the 36-hour maximum
 true inter-record gap, so that some true parents are structurally outside the
-search---leaves coverage nearly unchanged (83.4\% versus 84.0\% at the
-correlation-ids/dense/40\% cell) while \emph{reducing} identifiability-based
+search---raises supported coverage from 55.4\% to 60.8\% at the
+correlation-ids/dense/40\% cell while \emph{reducing} identifiability-based
 irrecoverability (57.7\% versus 65.3\%): a narrower window excludes some true
 parents but disambiguates many more candidate sets. Window choice thus trades
 reach against confidence rather than simply scaling results. Making the
 ticket filer differ from the commit author in 30\% of chains (breaking an
 actor-match assumption the generator otherwise makes perfectly reliable)
-lowers intent-link coverage at $p{=}40\%$ (dense) from 99.1\% to 97.5\% and
+lowers intent-link coverage at $p{=}40\%$ (dense) from 97.2\% to 96.1\% and
 raises identifiability-based irrecoverability from 16.8\% to 23.4\%---a
 measurable, modest degradation showing which headline numbers lean on that
 assumption. We report these arms so that readers can see the apparatus move,
@@ -276,9 +352,10 @@ a supported extension. The generator and reconstructor share authorship with
 the model; the removal and sensitivity arms are our defense, and the labeled
 separation of demonstrations from falsifiable tests is the honest reading of
 what each result can carry. \emph{External}: the estate is synthetic;
-magnitudes do not transfer, and only the interaction structure---plateaus with
-quantified redundancy dependence, pairwise superadditivity, effort-before-%
-failure, density-scaled error---is claimed, each tied to a model mechanism.
+magnitudes do not transfer, and only the interaction structure---effort plateaus
+with quantified redundancy dependence, pairwise superadditivity, effort-before-%
+failure, and accepted false reconstruction under deficit---is claimed. The isolated
+density effect remained mixed and is not claimed as causal.
 Real-world evidence that the phenomenon and its error channel exist at scale
 is, however, not absent from the literature: the mining-software-repositories
 community measured missing bug-fix links and the bias of heuristically

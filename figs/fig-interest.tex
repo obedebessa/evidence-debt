@@ -4,15 +4,15 @@
   edplot,
   width=0.92\columnwidth, height=5.1cm,
   xlabel={deficit age $\tau$ (days)},
-  ylabel={expected reconstruction cost (log)},
+  ylabel={expected debt contribution (log)},
   ymode=log, ymin=0.5, ymax=200,
   xmin=0, xmax=1100,
   legend pos=north west,
   axis y line*=left,
 ]
 \addplot[serA, thick]
-  table[x=day, y=exp_cost, col sep=comma] {data/interest.csv};
-\addlegendentry{expected cost}
+  table[x=day, y=burden, col sep=comma] {data/interest.csv};
+\addlegendentry{$B_q(\tau)$}
 \coordinate (cliff1) at (axis cs:90,0.5);
 \coordinate (cliff2) at (axis cs:400,0.5);
 \draw[black!35, densely dashed] (axis cs:90,0.5) -- (axis cs:90,200);

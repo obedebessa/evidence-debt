@@ -11,7 +11,7 @@ vocabulary is used only \emph{after} the underlying quantity is defined without 
 \begin{definition}[Evidence Schema]
 \label{def:schema}
 An \emph{evidence schema} $\Sch$ is a declared mapping from each class of
-operational change to the set of \emph{evidence elements} required for that class:
+operational change to the required set of \emph{evidence elements} for that class:
 typed facts (actor identity, content delta, intent statement, authorization basis,
 outcome record, recovery linkage) together with the \emph{link keys} that connect
 them across stores. \emph{Observability:} $\Sch$ is an artifact the organization
@@ -49,66 +49,142 @@ element's presence. No judgment about future cost is involved.
 A \emph{query} $q$ against operational history asks for a set of facts and links
 concerning past changes (e.g., ``what changed on service $s$ in window $w$, by whom,
 under what authorization?''). \emph{Reconstruction} is the process---human,
-algorithmic, or mixed---of answering $q$ from $\Corp(t)$. Its \emph{cost}
-$\ERC(q, \Corp(t))$ is the effort expended (person-time and compute, on a declared
-accounting) to reach an answer of stated confidence, and its \emph{error} is the
-divergence of the answer from ground truth. \emph{Observability:} cost is measurable
-directly whenever reconstruction is actually performed (incident retrospectives,
+algorithmic, or mixed---of attempting to answer $q$ from $\Corp(t)$. Its
+\emph{reconstruction-attempt cost} $\ERC(q, \Corp(t))$ is the finite effort expended
+(person-time and compute, on a declared accounting) until either (i) an answer of
+stated confidence is reached or (ii) the declared policy stops without one. Its
+\emph{error} is the divergence of any returned
+answer from ground truth. Thus $\ERC$ is defined even when no answer is produced;
+policy abstention and certified irrecoverability are represented separately in
+\cref{def:debt,def:irrec}. \emph{Observability:} attempt cost is
+measurable directly whenever reconstruction is performed (incident retrospectives,
 audit preparation, the drills of \cref{sec:field}); error is measurable wherever
 ground truth is independently available---natively in simulation
 (\cref{sec:simulation}), partially in the field.
+A \emph{reconstruction policy} $\rho$ declares the admissible sources, a finite
+exhaustion rule, a confidence threshold, and the acceptance/action rule; let
+$\mathcal R_q$ be the declared admissible policy class for $q$. The random variable
+$C_\rho(q,E)$ is the finite effort used by policy $\rho$ on evidence $E$.
+A policy is \emph{sound exhaustive} relative to $(U,\gamma,\rho_{\mathrm{exh}})$
+if it completes the declared finite exhaustion and accepts an answer only when the
+available evidence establishes it at confidence $\gamma$. Such a policy must
+abstain at the certified irrecoverability boundary of \cref{def:irrec}.
+Exhaustiveness alone does not imply soundness: an aggressive policy may inspect all
+declared sources and still return $W$ after the true fact cannot be established.
+Standardized drills estimate policy-specific effort by fixing $\rho$ in advance;
+the total-burden optimum used for debt accounting is defined in
+\cref{def:debt}, rather than by minimizing effort alone.
 \end{definition}
 
 \begin{definition}[Evidence Irrecoverability]
 \label{def:irrec}
-A fact or link required by query $q$ is \emph{irrecoverable} at $t$ if no
-reconstruction procedure over $\Corp(t)$ can establish it at the required confidence
----operationally, if every independent source that ever carried it has been
-destroyed or degraded below identifiability. A query is irrecoverable if any fact
-essential to it is. \emph{Observability:} in simulation, exactly decidable (ground
-truth known); in the field, certified by exhaustion of an enumerated source list,
-which is how forensic practice certifies unavailability~\cite{nist80086,casey2011}.
+A fact or link required by query $q$ is \emph{irrecoverable relative to a declared
+source universe $U$, confidence threshold $\gamma$, and exhaustion protocol
+$\rho_{\mathrm{exh}}$} if no admissible procedure over
+$\Corp(t)\cap U$ can establish it at confidence $\gamma$ after
+$\rho_{\mathrm{exh}}$ is completed. Write this operational event as
+$\Irr(q,t\mid U,\gamma,\rho_{\mathrm{exh}})$. A query is irrecoverable if any fact
+essential to it is. This is a scoped certificate, not a metaphysical claim that no
+forgotten backup, private message, or offline export exists anywhere.
+\emph{Observability:} in simulation, exactly decidable because $U$ and ground truth
+are complete; in the field, certified within an enumerated source list, as forensic
+practice certifies unavailability~\cite{nist80086,casey2011}.
 \end{definition}
 
 \begin{definition}[Evidence Debt]
 \label{def:debt}
 Fix a schema $\Sch$, a corpus $\Corp(t)$, and a \emph{query workload} $\Qw$: a set
 of potential future queries $q$ with occurrence weights $w_q > 0$ (frequencies,
-probabilities, or scenario weights, declared explicitly). The \emph{evidence debt}
-of the estate at $t$ is the expected excess reconstruction burden induced by its
-deficits:
+probabilities, or scenario weights, declared explicitly). The default reporting
+policy partitions every reconstruction outcome into exactly one of: $S$
+(supported-correct), $W$ (accepted-but-wrong), or $N$ (no answer certified by
+$\rho$, i.e., policy abstention).
+The policy first decides an acceptance indicator $A_\rho(q,E)\in\{0,1\}$ using
+only available evidence: $A_\rho=0$ implies $N$ regardless of ground truth; if
+$A_\rho=1$, ground truth distinguishes $S$ from $W$. Define
+$\Err_q=\{W\}$ and $\mathsf{Abst}_q=\{N\}$, so the accepted-error and policy-
+abstention channels are mutually exclusive. Crucially, $\mathsf{Abst}_q$ is not
+the irrecoverability event of \cref{def:irrec}: a conservative $\rho$ can abstain
+while another admissible procedure could still recover the fact. Write the latter
+state separately as $\mathsf I_q(E\mid U,\gamma,\rho_{\mathrm{exh}})\in\{0,1\}$.
+
+For each query template $q$, expectations and probabilities are taken under a
+declared evaluation measure $\mu_q$ over query instances and any analyst, policy,
+path-survival, or seed randomness. For a deterministic single instance they reduce
+to indicators; in the simulation they are empirical frequencies over the
+prespecified generated instances and seeds. For a fixed policy, define
 \begin{align*}
-\ED(t) \;=\; & \sum_{q \in \Qw} w_q \,
-\Bigl[\, \mathbb{E}\,\ERC\bigl(q, \Corp(t)\bigr) \;-\;
-\mathbb{E}\,\ERC\bigl(q, \Corp^{*}(t)\bigr) \Bigr] \\
-& \;+\; \sum_{q \in \Qw} w_q \, \pi_q \, \Irr_q(t),
+B_{q,\rho}(E)=&\;\mathbb E C_\rho(q,E)
++\lambda_q\Pr_\rho(\Err_q\mid E)\\[-2pt]
+&+\pi_q\Pr_\rho(\mathsf{Abst}_q\mid E),
 \end{align*}
-where $\Corp^{*}(t)$ is the counterfactual \emph{ideal corpus}: every element and
-link key required by $\Sch$ for every change up to $t$, captured at change time and
-subject to no decay. This choice is deliberate and consequential: it attributes
+and define the optimal total burden
+\begin{align*}
+B_q^{\star}(E)=\inf_{\rho\in\mathcal R_q}\bigl\{
+&\mathbb E C_\rho(q,E)+\lambda_q\Pr_\rho(\Err_q\mid E)\\[-2pt]
+&+\pi_q\Pr_\rho(\mathsf{Abst}_q\mid E)\bigr\}.
+\end{align*}
+The theoretical \emph{optimal evidence debt} of the estate at $t$ is
+\begin{equation*}
+\ED^{\star}(t)=\sum_{q\in\Qw}w_q
+\left[B_q^{\star}(\Corp(t))-B_q^{\star}(\Corp^{*}(t))\right].
+\end{equation*}
+The policy-specific estimand used by a preregistered drill is instead
+\begin{equation*}
+\ED_{\rho}(t)=\sum_{q\in\Qw}w_q
+\left[B_{q,\rho}(\Corp(t))-B_{q,\rho}(\Corp^{*}(t))\right].
+\end{equation*}
+Estimating $\ED^{\star}$ requires comparing multiple admissible policies or
+declaring $\mathcal R_q$ a singleton; one fixed drill estimates $\ED_\rho$, not an
+unobserved infimum. We use unadorned ``ED'' for the construct family and mark every
+reported numerical estimate by its policy context.
+When the consequence of certified physical loss must differ from a still-
+recoverable abstention, replace the additive consequence terms by a declared joint
+loss $L_q(Y_\rho,\mathsf I_q)$, where $Y_\rho\in\{S,W,N\}$. This permits, for
+example, $L_q(N,0)\ne L_q(N,1)$ and an aggressive wrong answer with
+$L_q(W,1)$, without equating a policy decision to a state of the evidence. The
+additive instance above is the estimand exercised here: it prices accepted error
+and policy-abstention exposure under $\rho$, while IRR is reported separately.
+
+$\Corp^{*}(t)$ is $\Corp(t)$ augmented with every element and link key required by
+$\Sch$ for every change up to $t$, captured at change time and subject to no decay.
+Thus $\Corp(t)\subseteq\Corp^{*}(t)$. If every policy available on less evidence
+can be emulated while ignoring extra evidence, then
+$B_q^{\star}(E_2)\leq B_q^{\star}(E_1)$ whenever $E_1\subseteq E_2$; hence
+$\ED^{\star}(t)\geq0$. A fixed-policy contrast $\ED_\rho$ inherits this guarantee
+only if $\rho$ is information-monotone; the simulation's complete ideal corpus
+resolves every link exactly at zero excess burden. This choice is deliberate and consequential: it attributes
 retention- and migration-driven loss of once-captured evidence to debt (as
 decay-created deficit, \cref{def:deficit}), because from the query's standpoint an
 expired record and a never-captured record are the same absence with different
-histories. $\Irr_q(t)$ indicates that $q$ is irrecoverable at $t$, and $\pi_q$ is
-the declared penalty weight of failing to answer $q$ at all. \emph{Observability:} estimable, not
+histories. $\lambda_q$ prices an incorrect returned answer and $\pi_q$ prices policy
+abstention. Neither coefficient by itself prices certified physical
+irrecoverability. \emph{Observability:} estimable, not
 directly observable---the estimation problem is exactly what
 \cref{sec:metrics,sec:simulation,sec:field} address; the definition fixes what the
-estimators are estimators \emph{of}.
+estimators are estimators \emph{of}. In field estimation, the same preregistered
+policy $\rho$ is applied to actual and ideal/reference corpora to estimate
+$\ED_\rho$. In the simulation, the admissible class is the singleton accompanying
+reconstructor, so $\ED_\rho=\ED^{\star}$ within that declared class.
 \end{definition}
 
-Three features of \cref{def:debt} do argumentative work. First, debt is
+Four features of \cref{def:debt} do argumentative work. First, debt is
 \emph{workload-relative}: an estate whose history will never be queried carries
 deficits but little debt; declaring $\Qw$ forces the (often implicit) organizational
 judgment about which contingencies matter into the open. Second, the excess-cost
 form makes the baseline explicit: even a complete corpus makes queries cost
-something; debt is only the part deferral added. Third, irrecoverability enters as a
-separate, penalty-weighted term rather than as an infinite cost, keeping $\ED$
-finite and decision-relevant (\cref{prop:writeoff}).
+something; debt is only the part deferral added, and optimal information-monotone
+total burden makes that excess nonnegative. Third, false reconstruction is priced
+explicitly rather than hidden inside effort. Fourth, policy abstention is priced as
+a finite consequence, while certified irrecoverability remains a separately
+reported state and the mandatory physical boundary of \cref{prop:writeoff}. This
+separation prevents a conservative policy from manufacturing ``irrecoverability''
+merely by declining to answer.
 
 \begin{definition}[Evidence-Debt Principal]
 \label{def:principal}
 The \emph{principal} of a deficit $\Def(x, t_x)$ is its contribution to $\ED(t_x)$
-at creation time---the excess expected cost were the workload queried immediately,
+at creation time---the excess expected burden were the workload queried immediately,
 while memory is fresh, sources are live, and identifiers are current.
 \emph{Observability:} estimable at change time from the deficit census and
 short-horizon reconstruction calibration.
@@ -130,14 +206,18 @@ schema drift, vendor migration, and loss of correlation identifiers.
 \emph{Observability:} the decay processes are individually observable (retention
 policies are published~\cite{cloudtrail,ghdocs,nist80092}; turnover is known to HR;
 migrations are scheduled); \cref{sec:interest} shows how their superposition yields
-a computable cost-versus-age curve, and why it is not a compound rate.
+a computable burden-versus-age curve, and why it is not a compound rate.
+Interest is gross decay-driven accrual in the absence of remediation. Backfill and
+restored linkage are repayments that reduce the debt stock; they are not negative
+interest.
 \end{definition}
 
 \begin{definition}[Evidence Liability]
 \label{def:liability}
 The \emph{liability} of the estate with respect to a specific contingency $q$ at $t$
 is the conditional realized burden if $q$ occurs at $t$: the actual reconstruction
-cost plus the consequence cost of unanswered or wrongly answered parts (regulatory
+cost plus the consequence cost of wrongly answered parts or parts left uncertified
+by $\rho$ (regulatory
 exposure, prolonged outage, lost claims)~\cite{sedona2018,sox2002}.
 \emph{Observability:} realized liabilities are observable events (audit findings,
 incident duration attributable to archaeology); $\ED$ is their workload-weighted
@@ -151,7 +231,8 @@ realizations.
 \caption{The causal accounting bridge from a syntactic deficit to economic
 exposure. Only the first node is obtained by census. Reconstruction drills
 measure ERC; declared labor, compute, and delay rates map effort to cost; workload
-weights and consequence penalties map cost and write-offs to exposure. The figure
+weights and accepted-error/abstention penalties map policy outcomes to exposure;
+physical irrecoverability remains a separate loss state. The figure
 defines an auditable chain, not a claim that this paper has estimated dollars.}
 \label{fig:economic-chain}
 \end{figure}
@@ -165,10 +246,12 @@ penalties of \cref{def:debt} turn those conditional costs into exposure. This
 separation is intentional: the paper can define and measure reconstruction burden
 without pretending to have measured wages, outage revenue, or regulatory loss.
 
-The vocabulary now has the shape the brief demanded, with each term cashed out
-independently of the metaphor: \emph{deficit} is syntax (what is missing),
-\emph{debt} is expectation (what the missing is expected to cost),
+The resulting vocabulary is internally consistent and independent of the financial
+metaphor: \emph{deficit} is syntax (what is missing),
+\emph{debt} is expectation (the excess reconstruction effort, accepted error, and
+policy abstention the missing evidence is expected to cause),
 \emph{principal} is the at-creation component, \emph{interest} is the decay-driven
 growth, \emph{liability} is the per-contingency realization, and
-\emph{irrecoverability} is the boundary at which cost becomes loss.
+\emph{irrecoverability} is the terminal physical loss state, priced separately only
+through a declared joint loss when policy abstention is not an adequate proxy.
 \Cref{sec:model} gives the machinery that connects them.

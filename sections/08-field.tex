@@ -30,7 +30,16 @@ template placeholders, and references found only in comments do not. An
 \texttt{APPROVED} review object is only a \emph{review-record presence control},
 not proof of organizational authorization. Release-lineage presence is an explicit
 PR or compare reference in release notes. The executable grammar and its unit tests
-are released with the artifact.
+are included with the accompanying artifact.
+
+Descriptive strata are also deterministic. Authorship is bot-authored when GitHub
+types the author as \texttt{Bot}, the login ends in \texttt{[bot]}, or it matches a
+Dependabot/Renovate-style login; all other authors are human-authored. Change type
+is assigned in precedence order from the title prefix, labels, and at most 20
+changed paths: documentation (documentation prefix/label or documentation-only
+paths), dependency/maintenance (bot, dependency label/title, or maintenance
+prefix), feature/bug (\texttt{feat}/\texttt{fix}/\texttt{bug} prefix or matching
+label), then other. These are descriptive controls, not judgments of change value.
 
 \input{empirical/argocd_macros.tex}
 \begin{table}[t]
@@ -93,7 +102,11 @@ using seed 20260807. Against manual title/body and resolved-target coding, the
 collector produced TP~=~\ArgoAuditTP, TN~=~\ArgoAuditTN, FP~=~\ArgoAuditFP, and
 FN~=~\ArgoAuditFN\ (precision~=~\ArgoAuditPrecision; recall~=~\ArgoAuditRecall).
 This validates implementation of the declared linkage grammar on the audit sample;
-it does not validate issue linkage as a measure of intent quality.
+it does not validate issue linkage as a measure of intent quality. A stronger
+validation should add a second independent reviewer, shuffle the sample, blind both
+reviewers to collector output, and report agreement (or a complete disagreement
+matrix). Those steps were not performed here and no inter-rater statistic is
+claimed.
 
 The observation has strict limits. A self-contained PR may document intent
 adequately; an issue may exist in a private or non-GitHub tracker; a dependency
@@ -104,7 +117,7 @@ prevalence sample. It establishes the occurrence of missing external issue linka
 under $\Sch_{\mathrm{repo}}$; it does not establish inadequate intent
 documentation, temporal decay, organizational negligence, evidence-debt magnitude,
 reconstruction cost, or financial exposure. Frozen data, classifications, audit
-coding, and generated counts are released in \texttt{empirical/}.
+coding, and generated counts are included in \texttt{empirical/}.
 
 \subsection{Instrument 1: Deficit Census}
 A static analyzer over an organization's stores (forge, ITSM, CI, registry, CD,
@@ -117,15 +130,29 @@ inventory---inputs (i) and (iii) of \cref{prop:reduction}. Non-invasive; require
 read access only.
 
 \subsection{Instrument 2: Reconstruction Drills}
-Timed, protocolized exercises measuring ERC directly (\cref{met:erc}): trained
+Timed, protocolized exercises measuring reconstruction performance (ERC and FRR;
+\cref{met:erc}): trained
 participants answer standardized historical queries (``for this running workload,
 establish what changed in window $w$, by whom, under which authorization, and
 why'') using only the organization's actual stores. Recorded: person-time by
 subtask, sources consulted, confidence of each recovered fact, unresolved facts,
-and---where an independent witness exists (e.g., the original author)---error.
+and---where independent ground truth exists---false reconstruction at the same
+declared confidence/acceptance policy.
+The primary excess-burden design adds an explicit reference arm. Investigators
+select chains initially satisfying $\Sch$, seal independent ground truth, and
+construct (i)~a complete reference view $E^{*}$ and (ii)~a treatment view $E$ by
+controlled holdout of the evidence class under study. Participants and query order
+are randomized and counterbalanced across matched chains to limit learning; both
+views use the same preregistered $\rho$. Their effort, accepted-error, and abstention
+differences estimate $\ED_\rho$, not $\ED^{\star}$. Where controlled holdout is not
+permitted, a matched comparison between schema-complete and naturally deficient
+changes is the weaker observational alternative and must report residual imbalance.
+Every abstention is coded as a policy outcome; only cases that complete the separate
+$(U,\gamma,\rho_{\mathrm{exh}})$ protocol are additionally counted in IRR. This
+prevents a cautious participant or tool from creating apparent physical loss.
 Drills are sampled across evidence ages to test IH1--IH2 (\cref{sec:interest-hyps})
 and across services with differing census scores, giving the correlation between
-EDR and measured ERC that a validated index (\cref{met:edi}) requires.
+EDR and measured ERC/FRR that a validated index (\cref{met:edi}) requires.
 Ethics: participants are studied with consent under institutional review;
 reconstruction targets are the organization's own records.
 
@@ -146,9 +173,9 @@ style delivery telemetry~\cite{forsgren2018,dora2019} provides covariates
 (\cref{met:growth}).
 
 \subsection{What Would Refute the Framework}
-The framework fails empirically if: census EDR does not predict drill ERC beyond
+The framework fails empirically if: census EDR does not predict drill ERC/FRR/AR beyond
 chance (the syntactic layer is disconnected from the economic one); measured cost
 curves are smooth in evidence age with no alignment to retention/migration
-schedules (against IH1 and \cref{prop:steps}); or false-fact rates in drills are
-negligible even under heavy deficit (against \cref{fnd:false}'s transfer). Each
+schedules (against IH1 and \cref{prop:steps}); or the preregistered $E/E^{*}$
+contrast shows no excess effort, accepted error, or abstention under deficit. Each
 refutation would be informative, and the instruments are designed to detect them.

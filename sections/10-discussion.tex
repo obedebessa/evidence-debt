@@ -7,12 +7,15 @@
 A concept paper owes its readers the strongest case against itself. We therefore
 attack our own framing and report what survives. \emph{Where the financial analogy fails:} there is no
 creditor and no contract---nobody agreed to the terms, and the ``lender'' (future
-circumstance) never negotiates; the interest is not a rate but a stochastic
-schedule of cliffs and hazards (\cref{prop:steps}), so compounding
+circumstance) never negotiates; effort and abstention exposure under sound exhaustive
+policies follow a stochastic
+schedule of cliffs and hazards while error may drift with discriminator quality
+(\cref{prop:steps}), so compounding
 intuitions---and any metric built on them---mislead (\cref{met:interest} was
-rejected on exactly this ground); repayment is not fungible---effort, error, and
-loss (\cref{fnd:effort,fnd:false,fnd:redundancy}) are different currencies that do
-not net against each other; and write-offs are mandatory and world-imposed
+rejected on exactly this ground); policy burden is not fungible---effort, accepted
+error, and abstention (\cref{fnd:effort,fnd:false,fnd:redundancy}) are different
+channels that do
+not net against each other; and physical irrecoverability boundaries are mandatory and world-imposed
 (\cref{prop:writeoff}), where financial write-offs are creditor choices.
 \emph{Where the analogy earns its keep:} the deferral structure is real (a present
 choice with a later, larger, contingent cost); the principal/carrying-cost
@@ -26,7 +29,7 @@ stands---deficit (\cref{def:deficit}) is a syntactic census; reconstruction cost
 (\cref{def:rec}) is a measured quantity; decay schedules and half-lives
 (\cref{sec:interest}) are computed from published retention and turnover;
 irrecoverability (\cref{def:irrec}) is a decidable/certifiable state; and the
-expected-excess-cost aggregate (\cref{def:debt}) is an ordinary expected value that
+expected-excess-burden aggregate (\cref{def:debt}) is an ordinary expected value that
 could as well be called \emph{reconstruction exposure}. We embrace that reading:
 the \emph{measured} quantity is reconstruction exposure, and a skeptic may use
 that vocabulary throughout without loss of formal content.
@@ -55,31 +58,47 @@ to cost (syntax against a declared schema); cost is defined without reference to
 deficit (measured effort of answering queries); debt relates the two through an
 explicit counterfactual; and the schema- and workload-relativity are declared
 inputs rather than smuggled conclusions. What \emph{is} irreducibly judgmental
----the choice of $\Sch$ and $(w_q, \pi_q)$---is surfaced as a governance decision,
+---the choice of $\Sch$ and $(w_q, \lambda_q, \pi_q)$---is surfaced as a governance decision,
 not hidden in a formula (\cref{sec:model-notformula}).
 
 \subsection{Relativity of the Construct}
 \label{sec:disc-relativity}
 The sharpest structural limitation is not the metaphor but the relativity:
 $\ED$ is defined against a declared schema $\Sch$ and a declared workload
-$(w_q, \pi_q)$, both controlled by the party being measured. An estate can reach
+$(w_q, \lambda_q, \pi_q)$, all controlled by the party being measured. An estate can reach
 $\ED \approx 0$ by declaring a weak schema or a sparse workload, and
 \cref{fnd:ed} showed concretely how the penalty declaration reshapes what the
 number says. We therefore state plainly: what is measurable
 \emph{inter-subjectively} is the ingredient vector---EDR against a published
-schema, measured ERC at stated confidence, the decay schedule, and the
+schema, measured ERC and FRR under the same stated policy, the decay schedule, and the
 irrecoverability constructs---while $\ED$ itself is an accounting quantity
 relative to published governance inputs, comparable across estates only under
-shared reference declarations. To make comparison possible rather than merely
+shared reference declarations and the same $\rho$. Policy choice is another gaming
+surface: an aggressive policy can trade $N$ for $W$, while a conservative one does
+the reverse. Cross-organizational reporting should therefore publish S/W/N and IRR,
+and, where policies differ, report a policy frontier rather than compare scalar
+$\ED_\rho$ values as though they shared an estimand. To make comparison possible rather than merely
 honest, we propose (as future standardization, not as this paper's result) a
 \emph{reference declaration}: the six-interrogative schema of
 \cref{sec:schema-informal} as $\Sch_{\mathrm{ref}}$, and a workload
 $\Qw_{\mathrm{ref}}$ parameterized by public covariates---per-service audit
 queries at a fixed annual rate, incident queries at the estate's measured
-incident rate, one recovery query per service---with penalty weights published
+incident rate, one recovery query per service---with error and abstention weights published
 alongside any reported figure. This is the same discipline financial accounting
 imposes through reporting standards: the number is meaningful because the rules
 for producing it are shared, not because it is observer-independent.
+For initial calibration, teams should derive $w_q$ from observed incident/audit
+query counts per reporting horizon or from explicit scenario probabilities;
+$\lambda_q$ from the incremental consequence of acting on an accepted wrong answer
+(e.g., investigation labor, remediation, or outage minutes); and $\pi_q$ from the
+incremental consequence of leaving that same question unresolved. All three must be
+expressed in one declared accounting unit. A practical elicitation is to record
+low/base/high values with the incident commander, audit owner, and service owner,
+then publish both the elicited rationale and the resulting grid. No universal
+DORA-derived default exists for these losses; when local estimates are weak, the
+honest output is the ingredient vector plus a declared $\lambda/\pi$ grid such as
+\cref{tab:pi-sensitivity}, not a falsely precise scalar. IRR remains a separate
+physical diagnostic unless a joint loss $L_q(Y_\rho,\mathsf I_q)$ is calibrated.
 
 \subsection{Explanatory and Predictive Value}
 The concept must be useful beyond naming. Its explanatory content: it unifies
@@ -88,11 +107,11 @@ old systems take longer to diagnose (interest), why audits of healthy systems fa
 (deficit despite health), why tool migrations feel like organizational amnesia
 (bulk path death), why the departure of one engineer disproportionately damages
 some services (human path as last survivor). Its predictive content is concrete
-and falsifiable: cost steps aligned to retention/migration schedules (IH1),
+and falsifiable: effort plateaus and cliffs aligned to retention/migration schedules (IH1),
 departure-boundary cost multiples (IH2), memory as modal final path (IH3), and
-the simulation-grounded expectations that effort inflation precedes failure and
-that dense, fragmented estates pay more in false history than in missing history
-(\cref{fnd:effort,fnd:false}). \Cref{sec:field} specifies the refutation
+the simulation-grounded expectation that effort inflation precedes failure
+(\cref{fnd:effort}). Accepted wrong answers occur, but the isolated density trend
+is mixed (\cref{fnd:false}). \Cref{sec:field} specifies the refutation
 conditions; a concept that survives them will have earned its place, and one that
 does not will have been usefully eliminated.
 
@@ -105,13 +124,29 @@ entered at creation with a backfill due date inside the cheapest-path window
 (\cref{sec:interest-worked}). \emph{Retention as governance, not default}:
 \cref{sec:interest-halflife}'s observation that half-lives are set by unexamined
 vendor defaults makes retention review the highest-leverage, lowest-cost
-intervention. \emph{Backfill sprints as refinancing}: deliberate reconstruction of
+intervention. \emph{Backfill sprints as repayment}: deliberate reconstruction of
 high-value history while paths are cheap---though \cref{fnd:false} warns that late
 backfill in dense estates risks writing confident fiction into the record, so
 backfilled facts should carry confidence annotations. \emph{Deferral budgets}:
 if evidence capture is to be skipped under pressure, the skip should be a recorded
 decision---the debt family's central lesson~\cite{kruchten2012} transposed: unmanaged
 debt is not the debt you took on but the debt you never knew you took on.
+\emph{Capture-versus-risk gate}: for capture action $a$ over horizon $H$, record
+\[
+K_H(a)=K_{\mathrm{labor}}(a)+K_{\mathrm{storage}}(a)
+       +K_{\mathrm{privacy/control}}(a),
+\]
+and adopt $a$ when
+\[
+K_H(a)<\sum_s p_s\bigl[\ED_{\rho,s}^{\neg a}
+                         -\ED_{\rho,s}^{a}\bigr],
+\]
+with scenario probabilities, horizon, accounting unit, and uncertainty range
+published. Otherwise selective omission may be rational.
+The comparison must be recorded because high-volume controllers can make exhaustive
+capture technically or legally disproportionate. This is a decision rule proposal,
+not a claim that this paper has measured either side of the trade-off; it closes the
+decision logic without pretending that the synthetic study supplies capture costs.
 
 \subsection{Limitations}
 Beyond the simulation threats (\cref{sec:sim-threats}): the framework prices
@@ -120,8 +155,8 @@ reconstruction, not the first-order value of evidence for real-time operations
 workload $\Qw$ is a declared judgment and organizations may declare it
 self-servingly---the discipline is publishing it; capture itself has costs
 (effort, storage, privacy exposure under data-protection law~\cite{gdpr,
-nist80092}) that our model takes as given rather than optimizing, so the full
-decision problem---optimal capture under cost and legal constraint---remains open;
+nist80092}) that our gate parameterizes but this study does not calibrate, so the
+empirical optimization of capture under cost and legal constraint remains open;
 and the only non-synthetic observation is a bounded, age-stratified public-forge
 sample that shows missing external issue linkage occurs under a declared schema
 but measures neither intent adequacy, decay, reconstruction, nor money

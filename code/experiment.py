@@ -16,24 +16,31 @@ v2 changes relative to v1 (in response to internal adversarial review):
         where applicable, timestamps) cannot uniquely identify the true
         parent (missing timestamps, truth outside the candidate window, or
         a non-singleton candidate set).
-  * A pairwise arm (correlation_ids + timestamps) that instantiates the
-    premise of Proposition 2 (neither class alone destroys records).
+  * A pairwise arm (correlation_ids + timestamps) for coverage interaction,
+    plus a paired per-link path census that directly tests Proposition 2's
+    acceptable-path premise on identical records and degradation masks.
   * Sensitivity arms that can move the conclusions: heuristic window 24 h
     (below the 36 h max true gap), redundancy disabled in the generator,
     ticket filer != commit author for 30% of chains, and a single-knob
     density sweep (chains/service in {50,100,150}, other knobs fixed).
   * ED(t) computed end-to-end under a declared synthetic workload
-    (per-configuration full-chain audit query, unit weights): excess
+    (per-configuration six-link audit workload, one unit-weight subquery per
+    required link): excess
     resolution cost (fallback links + 0.01 * candidates examined, in
-    declared resolution units) plus a write-off penalty PI=50 units per
-    identifiability-irrecoverable link. Complete-corpus baseline cost = 0
-    by construction (all joins exact).
+    declared resolution units), an error penalty LAMBDA=25 per returned false
+    link. Acceptance is decided before ground truth: exact/redundant joins and
+    unique heuristic candidates are accepted; ambiguous heuristic candidates may
+    be retained internally for diagnosis but the policy abstains. The
+    preregistered reporting policy then partitions outcomes into supported-correct,
+    accepted-wrong, and policy-abstention, so error and abstention penalties
+    are mutually exclusive. Complete-corpus baseline cost/error/
+    irrecoverability = 0 by construction (all joins exact).
   * results table rows and all figure series emitted programmatically.
 
 Deterministic given SEEDS. Pure stdlib.
 """
 
-import csv, math, random, statistics, time, os
+import copy, csv, math, random, statistics, time, os
 
 SEEDS = list(range(20))
 LEVELS = [0.0, 0.01, 0.05, 0.10, 0.20, 0.40]
@@ -43,7 +50,10 @@ CLASSES = ["intent_links", "approval_links", "correlation_ids",
 
 N_SERVICES = 8
 DAY = 24.0
-PI_WRITEOFF = 50.0      # declared write-off penalty per irrecoverable link
+PI_ABSTENTION = 50.0    # declared penalty per policy abstention
+LAMBDA_ERROR = 25.0     # declared consequence penalty per returned wrong link
+PI_SENSITIVITY = [0.0, 1.0, 10.0, 25.0, 50.0, 100.0]
+WEIGHT_GRID = [0.0, 10.0, 25.0, 50.0, 100.0]
 CAND_COST = 0.01        # declared cost per candidate examined
 FALLBACK_COST = 1.0     # declared cost per link needing non-exact resolution
 
@@ -162,6 +172,52 @@ def degrade(stores, cls, p, rng):
                     r["ts"] = None
 
 
+def paired_path_corpora(profile, p, seed):
+    """Return paired ID-only, timestamp-only, and union degradations.
+
+    The three corpora start from the same generated estate.  The identifier and
+    timestamp masks are sampled once and then applied separately and jointly,
+    making the per-link Proposition-2 antecedent directly testable.
+    """
+    base, truth = generate(random.Random(1000 + seed), profile)
+    ids_only, time_only, union = (copy.deepcopy(base) for _ in range(3))
+
+    id_rng = random.Random(17000 + seed * 131 + int(p * 1000))
+    time_rng = random.Random(23000 + seed * 131 + int(p * 1000))
+    id_fields = {
+        "build": ("commit_ref", "digest_ref"),
+        "artifact": ("build_ref",),
+        "deploy": ("digest_ref",),
+        "config": ("deploy_ref", "digest_ref"),
+    }
+    id_mask = set()
+    for store, fields in id_fields.items():
+        for record in base[store]:
+            for field in fields:
+                if field in record and id_rng.random() < p:
+                    id_mask.add((store, record["key"], field))
+    time_mask = set()
+    for store in base:
+        for record in base[store]:
+            if time_rng.random() < p:
+                time_mask.add((store, record["key"]))
+
+    def apply_masks(stores, apply_ids, apply_time):
+        by_key = {store: {r["key"]: r for r in records}
+                  for store, records in stores.items()}
+        if apply_ids:
+            for store, key, field in id_mask:
+                by_key[store][key][field] = None
+        if apply_time:
+            for store, key in time_mask:
+                by_key[store][key]["ts"] = None
+
+    apply_masks(ids_only, True, False)
+    apply_masks(time_only, False, True)
+    apply_masks(union, True, True)
+    return ids_only, time_only, union, truth
+
+
 # ------------------------------------------------------------- reconstruction
 class Rebuilder:
     """All exact/redundant joins are O(1) index lookups (zero counted
@@ -221,56 +277,87 @@ class Rebuilder:
         return cands[0][1], len(cands) > 1
 
     def rebuild_chain(self, config):
-        out = {}
+        """Return candidate keys and policy acceptance decisions.
+
+        Acceptance uses only corpus-visible evidence. Ground truth is not passed to
+        this method and is consulted later solely to score accepted answers.
+        """
+        out, accepted = {}, {}
         dep = self._exact("deploy", config.get("deploy_ref"))
+        dep_accepted = dep is not None
         if dep is None and config.get("digest_ref"):
             dep = self.deploy_by_digest.get(config["digest_ref"])
+            dep_accepted = dep is not None
         if dep is None:
-            dep, _ = self._heur("deploy", config)
+            dep, ambiguous = self._heur("deploy", config)
+            dep_accepted = dep is not None and not ambiguous
         out["config"] = dep["key"] if dep else None
+        accepted["config"] = dep_accepted
 
         art = None
+        art_accepted = False
         if dep is not None:
             art = self._exact("artifact", dep.get("digest_ref"))
+            art_accepted = dep_accepted and art is not None
         if art is None and config.get("digest_ref"):
             art = self._exact("artifact", config.get("digest_ref"))
+            art_accepted = art is not None
         if art is None and dep is not None:
-            art, _ = self._heur("artifact", dep)
+            art, ambiguous = self._heur("artifact", dep)
+            art_accepted = dep_accepted and art is not None and not ambiguous
         out["deploy"] = art["key"] if art else None
+        accepted["deploy"] = art_accepted
 
         bld = None
+        bld_accepted = False
         if art is not None:
             bld = self._exact("build", art.get("build_ref"))
+            bld_accepted = art_accepted and bld is not None
             if bld is None:
                 bld = self.build_by_digest.get(art["key"])
+                bld_accepted = art_accepted and bld is not None
             if bld is None:
-                bld, _ = self._heur("build", art)
+                bld, ambiguous = self._heur("build", art)
+                bld_accepted = art_accepted and bld is not None and not ambiguous
         out["artifact"] = bld["key"] if bld else None
+        accepted["artifact"] = bld_accepted
 
         com = None
+        com_accepted = False
         if bld is not None:
             com = self._exact("commit", bld.get("commit_ref"))
+            com_accepted = bld_accepted and com is not None
             if com is None:
-                com, _ = self._heur("commit", bld)
+                com, ambiguous = self._heur("commit", bld)
+                com_accepted = bld_accepted and com is not None and not ambiguous
         out["build"] = com["key"] if com else None
+        accepted["build"] = com_accepted
 
         apr = None
+        apr_accepted = False
         if com is not None:
             apr = self.apr_by_commit.get(com["key"])
+            apr_accepted = com_accepted and apr is not None
             if apr is None:
                 fake_child = dict(svc=com["svc"],
                                   ts=(com["ts"] + self.window_h / 2
                                       if com.get("ts") is not None else None))
-                apr, _ = self._heur("approval", fake_child)
+                apr, ambiguous = self._heur("approval", fake_child)
+                apr_accepted = com_accepted and apr is not None and not ambiguous
         out["approval"] = apr["key"] if apr else None
+        accepted["approval"] = apr_accepted
 
         tkt = None
+        tkt_accepted = False
         if com is not None:
             tkt = self._exact("ticket", com.get("ticket_ref"))
+            tkt_accepted = com_accepted and tkt is not None
             if tkt is None:
-                tkt, _ = self._heur("ticket", com, actor_match=com["actor"])
+                tkt, ambiguous = self._heur("ticket", com, actor_match=com["actor"])
+                tkt_accepted = com_accepted and tkt is not None and not ambiguous
         out["intent"] = tkt["key"] if tkt else None
-        return out
+        accepted["intent"] = tkt_accepted
+        return out, accepted
 
 
 # -------------------------------------------- identifiability irrecoverability
@@ -340,7 +427,59 @@ def link_irrecoverable(link, cfgrec, tr, surviving_rec, by_svc, window_h):
     return (not truth_in) or n_in_window != 1
 
 
+def path_state(stores, truth, window_h=48.0):
+    """Return link-level acceptable-path state keyed by (chain, link)."""
+    surviving = {s: {r["key"]: r for r in records}
+                 for s, records in stores.items()}
+    by_svc = {}
+    for store, records in stores.items():
+        grouped = {}
+        for record in records:
+            grouped.setdefault(record["svc"], []).append(record)
+        by_svc[store] = grouped
+    state = {}
+    for cfgrec in stores["config"]:
+        cid = cfgrec["chain"]
+        for link in LINKS:
+            state[(cid, link)] = not link_irrecoverable(
+                link, cfgrec, truth[cid], surviving, by_svc, window_h
+            )
+    return state
+
+
+def run_pairwise_path_diagnostic(p, seed, profile):
+    """Measure the exact path-survival premise of Proposition 2 per link."""
+    ids, timestamps, union, truth = paired_path_corpora(profile, p, seed)
+    a = path_state(ids, truth)
+    b = path_state(timestamps, truth)
+    ab = path_state(union, truth)
+    keys = sorted(a)
+    premise = sum(a[k] and b[k] for k in keys)
+    only_union_loss = sum(a[k] and b[k] and not ab[k] for k in keys)
+    return dict(
+        profile=profile,
+        p=p,
+        seed=seed,
+        total_links=len(keys),
+        ids_usable=sum(a.values()),
+        time_usable=sum(b.values()),
+        union_usable=sum(ab.values()),
+        premise_links=premise,
+        only_union_loss=only_union_loss,
+        premise_rate=premise / len(keys),
+        only_union_loss_rate=only_union_loss / len(keys),
+        conditional_loss=(only_union_loss / premise) if premise else 0.0,
+    )
+
+
 # -------------------------------------------------------------------- scoring
+def classify_outcome(accepted, candidate_key, expected_key):
+    """Apply the preregistered S/W/N rule after a corpus-only accept decision."""
+    if not accepted:
+        return "N"
+    return "S" if candidate_key == expected_key else "W"
+
+
 def run_condition(cls, p, seed, profile, window_h=48.0, redundancy=True,
                   filer_mismatch=0.0, tag=""):
     rng = random.Random(1000 + seed)
@@ -356,47 +495,58 @@ def run_condition(cls, p, seed, profile, window_h=48.0, redundancy=True,
 
     rb = Rebuilder(stores, window_h=window_h)
     t_start = time.perf_counter()
-    correct = false = missing = 0
+    correct = false = no_cert = 0
     chains_ok = n_chains = 0
     chains_recloss = chains_irrec = 0
-    irrec_links_total = 0
-    ed_effort = ed_writeoff = 0.0
+    error_links_total = irrec_links_total = no_cert_links_total = 0
+    ed_effort = ed_error = ed_abstention = 0.0
     for cfgrec in stores["config"]:
         cid = cfgrec["chain"]
         n_chains += 1
         fb0, cand0 = rb.fallback_links, rb.candidates_examined
-        got = rb.rebuild_chain(cfgrec)
+        got, policy_accepts = rb.rebuild_chain(cfgrec)
         fb1, cand1 = rb.fallback_links, rb.candidates_examined
         tr = truth[cid]
         expected = dict(config=tr["config"][1], deploy=tr["deploy"][1],
                         artifact=tr["artifact"][1], build=tr["build"][1],
                         approval=tr["approval"][0], intent=tr["intent"][1])
         ok_all, recloss, irrec_any = True, False, False
-        irrec_links = 0
+        irrec_links = no_cert_links = false_links = 0
         for link in LINKS:
             exp, gotk = expected[link], got[link]
             if exp not in surviving_rec[reported_store[link]]:
                 recloss = True
-            if link_irrecoverable(link, cfgrec, tr, surviving_rec,
-                                  rb.by_svc, window_h):
+            is_irrec = link_irrecoverable(
+                link, cfgrec, tr, surviving_rec, rb.by_svc, window_h
+            )
+            if is_irrec:
                 irrec_any = True
                 irrec_links += 1
-            if gotk is None:
-                missing += 1
+            # The acceptance decision was already made by Rebuilder without
+            # access to ground truth. Truth is consulted only after that decision
+            # to distinguish supported-correct (S) from accepted-wrong (W).
+            outcome = classify_outcome(policy_accepts[link], gotk, exp)
+            if outcome == "N":
+                no_cert += 1
+                no_cert_links += 1
                 ok_all = False
-            elif gotk == exp:
+            elif outcome == "S":
                 correct += 1
             else:
                 false += 1
+                false_links += 1
                 ok_all = False
         chains_ok += ok_all
         chains_recloss += recloss
         chains_irrec += irrec_any
+        error_links_total += false_links
         irrec_links_total += irrec_links
-        # ED under the declared workload: one full-chain audit query per
-        # config, unit weight; complete-corpus cost is 0 (all joins exact)
+        no_cert_links_total += no_cert_links
+        # ED under the declared workload: six unit-weight link subqueries per
+        # config; complete-corpus cost is 0 (all joins exact)
         ed_effort += FALLBACK_COST * (fb1 - fb0) + CAND_COST * (cand1 - cand0)
-        ed_writeoff += PI_WRITEOFF * irrec_links
+        ed_error += LAMBDA_ERROR * false_links
+        ed_abstention += PI_ABSTENTION * no_cert_links
     elapsed = time.perf_counter() - t_start
     total_links = n_chains * len(LINKS)
     accepted = correct + false
@@ -407,12 +557,15 @@ def run_condition(cls, p, seed, profile, window_h=48.0, redundancy=True,
         chain_cov=chains_ok / n_chains,
         recloss=chains_recloss / n_chains,
         irrec=chains_irrec / n_chains,
+        error_links=error_links_total / total_links,
         irrec_links=irrec_links_total / total_links,
+        no_cert_links=no_cert_links_total / total_links,
         fallback=rb.fallback_links / n_chains,
         candidates=rb.candidates_examined / n_chains,
         ed_effort=ed_effort / n_chains,
-        ed_writeoff=ed_writeoff / n_chains,
-        ed=(ed_effort + ed_writeoff) / n_chains,
+        ed_error=ed_error / n_chains,
+        ed_abstention=ed_abstention / n_chains,
+        ed=(ed_effort + ed_error + ed_abstention) / n_chains,
         secs=elapsed,
     )
 
@@ -420,7 +573,8 @@ def run_condition(cls, p, seed, profile, window_h=48.0, redundancy=True,
 # ------------------------------------------------- interest / decay model fig
 def interest_curve():
     LAM = 1.0 / 900.0
-    C_MAX = 100.0
+    CERT_COST = 5.0
+    PI_CURVE = 100.0
     rows = []
     for day in range(0, 1096, 7):
         paths = []
@@ -431,11 +585,14 @@ def interest_curve():
         p_emp = math.exp(-LAM * day)
         c_int = 8.0 * (1 + day / 365.0)
         if paths:
-            exp_cost, p_irr = min(paths), 0.0
+            attempt_cost, p_err, p_irr = min(paths), 0.0, 0.0
         else:
-            exp_cost = p_emp * c_int + (1 - p_emp) * C_MAX
+            attempt_cost = p_emp * c_int + (1 - p_emp) * CERT_COST
+            p_err = 0.0
             p_irr = 1 - p_emp
-        rows.append((day, exp_cost, p_irr))
+        burden = (attempt_cost + LAMBDA_ERROR * p_err
+                  + PI_CURVE * p_irr)
+        rows.append((day, attempt_cost, p_err, p_irr, burden))
     return rows
 
 
@@ -451,6 +608,143 @@ def mean_sd(rs, k):
     vals = [x[k] for x in rs]
     return (statistics.mean(vals),
             statistics.stdev(vals) if len(vals) > 1 else 0.0)
+
+
+def write_pi_sensitivity(agg, out_dir):
+    """Decompose ED and rank all seven main arms as pi varies.
+
+    The comparison uses the dense-profile, p=40% endpoint. ``no_cert_links`` is
+    stored as a fraction of the six required links, so multiplying by
+    ``len(LINKS)`` recovers mutually exclusive policy-abstention outcomes per
+    configuration.
+    """
+    labels = {
+        "intent_links": "Intent",
+        "approval_links": "Approval",
+        "correlation_ids": "IDs",
+        "source_artifacts": "Delete",
+        "timestamps": "Time",
+        "ids_plus_timestamps": "IDs+Time",
+        "combined": "All",
+    }
+    output = []
+    by_pi = {}
+    for pi in PI_SENSITIVITY:
+        cells = []
+        for cls in CLASSES:
+            key = ("main", "dense", cls, 0.40)
+            effort = mean_sd(agg[key], "ed_effort")[0]
+            error = mean_sd(agg[key], "ed_error")[0]
+            irr_per_config = (mean_sd(agg[key], "no_cert_links")[0]
+                              * len(LINKS))
+            abstention = pi * irr_per_config
+            total = effort + error + abstention
+            cells.append(dict(cls=cls, effort=effort, error=error,
+                              abstention=abstention, ed=total))
+        ordered_totals = sorted({round(cell["ed"], 12) for cell in cells},
+                                reverse=True)
+        for cell in cells:
+            cell["rank"] = ordered_totals.index(round(cell["ed"], 12)) + 1
+            output.append(dict(profile="dense", p=0.40, pi=pi, **cell))
+        by_pi[pi] = cells
+
+    csv_path = os.path.join(out_dir, "pi_sensitivity.csv")
+    with open(csv_path, "w", newline="") as f:
+        w = csv.DictWriter(
+            f, fieldnames=["profile", "p", "pi", "cls", "effort",
+                           "error", "abstention", "ed", "rank"],
+            lineterminator="\n",
+        )
+        w.writeheader()
+        w.writerows(output)
+
+    tex_path = os.path.join(out_dir, "table_pi_sensitivity.tex")
+    with open(tex_path, "w") as f:
+        f.write("\\resizebox{\\textwidth}{!}{%\n")
+        f.write("\\begin{tabular}{@{}rccccccc@{}}\n\\toprule\n")
+        f.write("$\\pi$ & " + " & ".join(labels[c] for c in CLASSES)
+                + " \\\\\n\\midrule\n")
+        for pi in PI_SENSITIVITY:
+            entries = []
+            for cell in by_pi[pi]:
+                entries.append(
+                    f"{cell['effort']:.1f}/{cell['error']:.1f}/"
+                    f"{cell['abstention']:.1f}/"
+                    f"{cell['ed']:.1f}$^{{({cell['rank']})}}$"
+                )
+            f.write(f"{pi:g} & " + " & ".join(entries) + " \\\\\n")
+        f.write("\\bottomrule\n\\end{tabular}%\n}\n")
+
+    compact_path = os.path.join(out_dir, "table_pi_sensitivity_compact.tex")
+    with open(compact_path, "w") as f:
+        f.write("\\resizebox{\\textwidth}{!}{%\n")
+        f.write("\\begin{tabular}{@{}rccccccc@{}}\n\\toprule\n")
+        f.write("$\\pi$ & " + " & ".join(labels[c] for c in CLASSES)
+                + " \\\\\n\\midrule\n")
+        for pi in (0.0, 50.0, 100.0):
+            entries = []
+            for cell in by_pi[pi]:
+                entries.append(
+                    f"{cell['effort']:.1f}/{cell['error']:.1f}/"
+                    f"{cell['abstention']:.1f}/{cell['ed']:.1f}"
+                    f"$^{{({cell['rank']})}}$"
+                )
+            f.write(f"{pi:g} & " + " & ".join(entries) + " \\\\\n")
+        f.write("\\bottomrule\n\\end{tabular}%\n}\n")
+
+
+def write_weight_sensitivity(agg, out_dir):
+    """Evaluate all seven arms on a joint lambda/pi consequence-weight grid."""
+    labels = {
+        "intent_links": "Intent", "approval_links": "Approval",
+        "correlation_ids": "IDs", "source_artifacts": "Delete",
+        "timestamps": "Time", "ids_plus_timestamps": "IDs+Time",
+        "combined": "All",
+    }
+    rows, winners = [], {}
+    for pi in WEIGHT_GRID:
+        for lam in WEIGHT_GRID:
+            cells = []
+            for cls in CLASSES:
+                key = ("main", "dense", cls, 0.40)
+                effort = mean_sd(agg[key], "ed_effort")[0]
+                err = mean_sd(agg[key], "error_links")[0] * len(LINKS)
+                no_cert = mean_sd(agg[key], "no_cert_links")[0] * len(LINKS)
+                error = lam * err
+                abstention = pi * no_cert
+                cells.append(dict(cls=cls, effort=effort, error=error,
+                                  abstention=abstention,
+                                  ed=effort + error + abstention))
+            ordered = sorted({round(c["ed"], 12) for c in cells}, reverse=True)
+            for cell in cells:
+                cell["rank"] = ordered.index(round(cell["ed"], 12)) + 1
+                rows.append(dict(profile="dense", p=0.40, lambda_=lam,
+                                 pi=pi, **cell))
+            winner = max(cells, key=lambda c: c["ed"])
+            winners[(pi, lam)] = (labels[winner["cls"]], winner["ed"])
+
+    with open(os.path.join(out_dir, "weight_sensitivity.csv"), "w",
+              newline="") as f:
+        fields = ["profile", "p", "lambda", "pi", "cls", "effort",
+                  "error", "abstention", "ed", "rank"]
+        w = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
+        w.writeheader()
+        for row in rows:
+            row = dict(row)
+            row["lambda"] = row.pop("lambda_")
+            w.writerow(row)
+
+    with open(os.path.join(out_dir, "table_weight_sensitivity.tex"), "w") as f:
+        f.write("\\begin{tabular}{@{}rccccc@{}}\n\\toprule\n")
+        f.write("$\\pi\\backslash\\lambda$ & "
+                + " & ".join(f"{x:g}" for x in WEIGHT_GRID)
+                + " \\\\\n\\midrule\n")
+        for pi in WEIGHT_GRID:
+            cells = [f"{winners[(pi, lam)][0]} "
+                     f"({winners[(pi, lam)][1]:.1f})"
+                     for lam in WEIGHT_GRID]
+            f.write(f"{pi:g} & " + " & ".join(cells) + " \\\\\n")
+        f.write("\\bottomrule\n\\end{tabular}\n")
 
 
 def main():
@@ -484,17 +778,46 @@ def main():
                                       tag="densweep"))
     print(f"[{time.time()-t0:6.1f}s] density sweep")
 
+    path_rows = []
+    for profile in ("sparse", "dense"):
+        for p in LEVELS:
+            for seed in SEEDS:
+                path_rows.append(run_pairwise_path_diagnostic(p, seed, profile))
+    with open(os.path.join(out_dir, "pairwise_path_diagnostic.csv"), "w",
+              newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(path_rows[0].keys()),
+                           lineterminator="\n")
+        w.writeheader()
+        w.writerows(path_rows)
+    path_agg = agg_rows(path_rows, ["profile", "p"])
+    with open(os.path.join(out_dir, "pairwise_path_summary.csv"), "w",
+              newline="") as f:
+        fields_path = ["premise_rate", "only_union_loss_rate",
+                       "conditional_loss"]
+        w = csv.writer(f, lineterminator="\n")
+        w.writerow(["profile", "p"] +
+                   [item for field in fields_path
+                    for item in (field, field + "_sd")])
+        for key, group in sorted(path_agg.items()):
+            row = list(key)
+            for field in fields_path:
+                row.extend(mean_sd(group, field))
+            w.writerow(row)
+    print(f"[{time.time()-t0:6.1f}s] paired path diagnostic")
+
     with open(os.path.join(out_dir, "results_raw.csv"), "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()),
+                           lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
 
     fields = ["coverage", "false_rate", "chain_cov", "recloss", "irrec",
-              "irrec_links", "fallback", "candidates", "ed_effort",
-              "ed_writeoff", "ed", "secs"]
+              "error_links", "irrec_links", "no_cert_links", "fallback",
+              "candidates", "ed_effort", "ed_error", "ed_abstention", "ed",
+              "secs"]
     agg = agg_rows(rows, ["tag", "profile", "cls", "p"])
     with open(os.path.join(out_dir, "results.csv"), "w", newline="") as f:
-        w = csv.writer(f)
+        w = csv.writer(f, lineterminator="\n")
         header = ["tag", "profile", "cls", "p"]
         for k in fields:
             header += [k, k + "_sd"]
@@ -505,6 +828,9 @@ def main():
                 m, s = mean_sd(rs, k)
                 row += [m, s]
             w.writerow(row)
+
+    write_pi_sensitivity(agg, out_dir)
+    write_weight_sensitivity(agg, out_dir)
 
     # series files for pgfplots (main runs only)
     ser_dir = os.path.join(out_dir, "series")
@@ -526,20 +852,21 @@ def main():
             (p * 100, m["coverage"], s["coverage"], m["false_rate"],
              s["false_rate"], m["recloss"], s["recloss"], m["irrec"],
              s["irrec"], fb, m["candidates"], m["ed"], m["ed_effort"],
-             m["ed_writeoff"]))
+             m["ed_error"], m["ed_abstention"]))
     for (profile, cls), pts in series.items():
         with open(os.path.join(ser_dir, f"{profile}_{cls}.csv"), "w",
                   newline="") as f:
-            w = csv.writer(f)
+            w = csv.writer(f, lineterminator="\n")
             w.writerow(["p", "cov", "covsd", "false", "falsesd", "recloss",
                         "reclosssd", "irrec", "irrecsd", "fallback",
-                        "candidates", "ed", "ed_effort", "ed_writeoff"])
+                        "candidates", "ed", "ed_effort", "ed_error",
+                        "ed_abstention"])
             for pt in sorted(pts):
                 w.writerow(pt)
 
     with open(os.path.join(out_dir, "interest.csv"), "w", newline="") as f:
-        w = csv.writer(f)
-        w.writerow(["day", "exp_cost", "p_irrec"])
+        w = csv.writer(f, lineterminator="\n")
+        w.writerow(["day", "attempt_cost", "p_error", "p_irrec", "burden"])
         for row in interest_curve():
             w.writerow(row)
 
@@ -560,25 +887,32 @@ def main():
         ("main", "sparse", "combined", 0.2), ("main", "dense", "combined", 0.2),
         ("main", "sparse", "combined", 0.4), ("main", "dense", "combined", 0.4),
     ]
-    header = ("\\begin{tabular}{@{}llrlllll@{}}\n\\toprule\n"
-              "\\textbf{Class} & \\textbf{Prof.} & $p$ & \\textbf{Cov} & "
-              "\\textbf{FJ} & \\textbf{Irr} & \\textbf{FB} & "
-              "\\textbf{ED} \\\\\n\\midrule\n")
+    header = ("\\begin{tabular}{@{}llrccccccc@{}}\n\\toprule\n"
+              "\\textbf{Class} & \\textbf{Prof.} & $p$ & $S$ & $W$ & $N$ & "
+              "\\textbf{FRR} & \\textbf{IRR$_{ch}$} & \\textbf{ERC} & "
+              "$\\ED_\\rho$ \\\\\n\\midrule\n")
     body = []
     with open(os.path.join(out_dir, "table_rows.tex"), "w") as f:
         for key in sel:
             tag, profile, cls, p = key
             name = cls.replace("_", " ")
             line = (f"{name} & {profile} & {int(p*100)}\\% & "
-                    f"{fmt(key,'coverage')} & {fmt(key,'false_rate')} & "
-                    f"{fmt(key,'irrec')} & {fmt(key,'fallback',2)} & "
-                    f"{fmt(key,'ed',1)} \\\\\n")
+                    f"{mean_sd(agg[key],'coverage')[0]:.3f} & "
+                    f"{mean_sd(agg[key],'error_links')[0]:.3f} & "
+                    f"{mean_sd(agg[key],'no_cert_links')[0]:.3f} & "
+                    f"{mean_sd(agg[key],'false_rate')[0]:.3f} & "
+                    f"{mean_sd(agg[key],'irrec')[0]:.3f} & "
+                    f"{mean_sd(agg[key],'ed_effort')[0]:.1f} & "
+                    f"{mean_sd(agg[key],'ed')[0]:.1f} \\\\\n")
             f.write(line)
             body.append(line)
     with open(os.path.join(out_dir, "table_full.tex"), "w") as f:
         f.write(header + "".join(body) + "\\bottomrule\n\\end{tabular}\n")
     print("wrote results.csv, results_raw.csv, series/, interest.csv, "
-          "table_rows.tex")
+          "pairwise path diagnostics, table_rows.tex, pi_sensitivity.csv, "
+          "table_pi_sensitivity.tex, table_pi_sensitivity_compact.tex, "
+          "weight_sensitivity.csv, and "
+          "table_weight_sensitivity.tex")
 
 
 if __name__ == "__main__":

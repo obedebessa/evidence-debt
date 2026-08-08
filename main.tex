@@ -1,6 +1,6 @@
 % =====================================================================
-% Evidence Debt: Measuring the Accumulated Cost of Missing Operational
-% Evidence in Cloud-Native Systems
+% Evidence Debt: Modeling the Deferred Reconstruction Burden of Missing
+% Operational Evidence in Cloud-Native Systems
 %
 % Journal-length manuscript, IEEE-Transactions-style formatting on the
 % base article class (content transplants directly into IEEEtran /
@@ -107,6 +107,7 @@
 \newcommand{\ED}{\mathsf{ED}}
 \newcommand{\ERC}{\mathsf{C}_{\mathrm{rec}}}
 \newcommand{\Irr}{\mathsf{Irr}}
+\newcommand{\Err}{\mathsf{Err}}
 \newcommand{\Liab}{\mathsf{L}}
 \newcommand{\surv}{S}
 \newcommand{\haz}{\lambda}
@@ -138,9 +139,10 @@
 
 \twocolumn[{%
 \begin{center}
-{\fontsize{21}{25}\selectfont
-Evidence Debt: Measuring the Accumulated Cost of\\[2pt]
-Missing Operational Evidence in Cloud-Native Systems\par}
+{\fontsize{20}{24}\selectfont
+Evidence Debt: Modeling the Deferred Reconstruction\\[2pt]
+Burden of Missing Operational Evidence in\\[2pt]
+Cloud-Native Systems\par}
 \vspace{14pt}
 {\fontsize{11}{13}\selectfont Obede Bessa\par}
 \vspace{2pt}
@@ -150,7 +152,7 @@ Missing Operational Evidence in Cloud-Native Systems\par}
 }]
 
 % ------------------------- abstract ----------------------------------
-\noindent\textbf{\textit{Abstract}---Technical debt names future engineering cost created by expedient technical decisions. We investigate an analogous but distinct phenomenon in cloud-native operations: \emph{evidence debt}, the expected excess reconstruction cost created when infrastructure changes lack durable evidence of who acted, what changed, why, under which authorization, with what outcome, and how the system can be reconstructed. Missing evidence rarely causes immediate failure; cost is deferred to incidents, audits, investigations, turnover, and recovery. We contribute non-circular definitions; a reconstruction-cost model with per-source decay; analytic results showing stochastic, step-shaped ``interest'' and mandatory write-offs; a metric suite that rejects a scalar interest rate; an executed simulation; a bounded repository observation; and a field-study protocol. At 40\% degradation, key stripping costs 0.9--16 coverage points by evidence class, while whole-record deletion collapses coverage to 32\%. Joint identifier--timestamp degradation loses 35 points against a 16-point sum of single degradations; false joins reach 48\% under dense activity. Reconstruction effort rises before coverage visibly fails. An age-stratified sample of 200 merged Argo CD pull requests found that 52.5\% lacked an external issue reference under the declared repository schema; review-record and release-lineage presence controls were 98.5\% and 100\%, respectively. A seeded 50-PR manual audit matched the collector labels. This observation establishes missing external issue linkage, not inadequate intent documentation, evidence-debt magnitude, temporal decay, or reconstruction cost.}
+\noindent\textbf{\textit{Abstract}---We define \emph{evidence debt}: expected excess reconstruction burden created when infrastructure changes lack durable evidence of who acted, what changed, why, under which authorization, with what outcome, and how the system can be reconstructed. We contribute non-circular definitions; theoretical $\ED^{\star}$ and fixed-policy $\ED_\rho$ quantities; a decay-aware reconstruction model; analytic plateau, interaction, and bounded-loss results; a deterministic simulation; a bounded repository observation; and an unexecuted field protocol. Methodologically, $\rho$ decides whether to accept using evidence alone, \emph{before} ground truth scores an accepted answer; policy abstention is kept distinct from certified physical irrecoverability. Under this rule, 40\% degradation leaves 97.2\% supported coverage after intent-link stripping and 93.6\% after approval-link stripping, but 55.4\% after correlation-id stripping and 29.4\% after dense record deletion; accepted-wrong answers reach 30.3\% among accepted links in the latter condition. A paired path census observes complementary degradations destroying the last acceptable path. In 200 age-stratified Argo CD pull requests, 52.5\% lacked an external issue reference under a declared repository schema; review-record and release-lineage controls were 98.5\% and 100\%, and a seeded 50-PR audit matched collector labels. This observation establishes missing external linkage, not intent inadequacy, debt magnitude, decay, or reconstruction cost. The paper therefore establishes a theoretical and synthetic measurement foundation; field magnitudes remain open.}
 
 \vspace{4pt}
 \noindent\textbf{\textit{Index Terms}---Evidence debt, technical debt, auditability, operational evidence, cloud-native systems, DevOps, record linkage, digital forensics, site reliability engineering.}

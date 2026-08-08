@@ -3,7 +3,7 @@
   \node[stage, minimum width=24mm] (gen)
     {\textbf{generator}\\{\smlbl 8 services $\cdot$ 6 stores}\\[-1pt]{\smlbl 6 links/chain $\cdot$ redundancy}\\[-1pt]{\smlbl sparse / dense profiles}};
   \node[brok, right=of gen, minimum width=24mm] (deg)
-    {\textbf{degrader}\\{\smlbl intent $\cdot$ approval $\cdot$ corr-ids}\\[-1pt]{\smlbl records $\cdot$ timestamps $\cdot$ all}\\[-1pt]{\smlbl $p \in \{1,5,10,20,40\}\%$}};
+    {\textbf{degrader}\\{\smlbl intent $\cdot$ approval $\cdot$ corr-ids}\\[-1pt]{\smlbl records $\cdot$ timestamps $\cdot$ ids+time}\\[-1pt]{\smlbl all-classes; $p \in \{1,5,10,20,40\}\%$}};
   \node[stage, right=of deg, minimum width=24mm] (rec)
     {\textbf{reconstructor}\\{\smlbl exact joins}\\[-1pt]{\smlbl redundant paths}\\[-1pt]{\smlbl heuristic linkage}};
   \draw[flow] (gen) -- node[lbl, above]{$\Hist,\Corp$} (deg);
@@ -17,5 +17,5 @@
   \draw[flow] (rec) -- (score);
   \draw[eflow] (truth) -- (score);
   \node[lbl, below=1.5mm of deg, xshift=2mm, text=black!60]
-    {20 seeds $\times$ 2 profiles $\times$ 6 classes $\times$ 6 levels};
+    {20 seeds $\times$ 2 profiles $\times$ 7 arms $\times$ 6 levels};
 \end{tikzpicture}

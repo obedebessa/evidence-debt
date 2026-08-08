@@ -1,9 +1,11 @@
 \section{Interest: The Shape of Cost Growth Over Time}
 \label{sec:interest}
 
-\Cref{prop:steps} predicts the temporal signature of evidence-debt interest:
-plateaus punctuated by cliffs, with smooth growth only where human memory is the
-cheapest surviving source. This section makes the prediction concrete by computing
+\Cref{prop:steps} predicts the temporal signature of reconstruction effort and,
+under a sound exhaustive policy, abstention exposure: plateaus punctuated by cliffs, with smooth
+growth where a hazard-governed human path is the cheapest surviving source. Error
+exposure may instead drift as discriminators degrade. This section makes the
+qualified prediction concrete by computing
 the expected-cost trajectory of one canonical deficit under a documented decay
 schedule. The computation is \emph{model-derived and clearly labeled as such}: its
 inputs are realistic and cited, its output is an illustration of structure, not a
@@ -26,20 +28,27 @@ with mean tenure $\sim$2.5 years~\cite{rigby2016}); and nothing (irrecoverable).
 \centering
 \input{figs/fig-interest}
 \caption{Model-derived interest trajectory for a fixed intent-link deficit under
-the decay schedule of \cref{sec:interest-worked} (computed from the released
-script; illustrative structure, not a field measurement). Expected reconstruction
-cost (solid, left axis, log scale) is flat while the cheapest path (CI log)
+the decay schedule of \cref{sec:interest-worked} (computed from the accompanying
+script; illustrative structure, not a field measurement). The expected evidence-
+debt contribution for the illustrated fixed policy,
+$B_{q,\rho}(\tau)=\mathbb{E}C_\rho+\lambda_q\Pr_\rho(\Err_q)
++\pi_q\Pr_\rho(\mathsf{Abst}_q)$ (solid, left axis, log scale), is flat while the cheapest path (CI log)
 survives, jumps at its 90-day retention cliff to the forge-context cost, jumps
 again at the day-400 migration to the interview path---whose expected cost then
 grows smoothly as turnover hazard accumulates and interviews lengthen---and
-saturates at the write-off cap as irrecoverability probability (dashed, right
-axis) approaches one. The shape---plateaus, cliffs, hazard-driven slope,
-saturation---is the general prediction of \cref{prop:steps}; none of it is
-compound growth.}
+saturates at finite certification cost plus the abstention penalty as physical
+irrecoverability probability (dashed, right axis) approaches one. The illustrated
+illustrated $\rho$ is sound exhaustive: it exhausts all declared paths and accepts
+only evidence-established answers. Thus abstention and physical irrecoverability
+coincide on this curve; that equality is a property of this policy, not a
+definition. The shape---plateaus, cliffs, hazard-driven slope, saturation---is the
+qualified prediction of \cref{prop:steps}; none of it is compound growth. This
+worked curve sets $\Pr(\Err_q)=0$ to isolate decay; the simulation prices the
+accepted-error channel separately.}
 \label{fig:interest}
 \end{figure}
 
-\Cref{fig:interest} plots the resulting expected cost and irrecoverability
+\Cref{fig:interest} plots the resulting expected debt contribution and irrecoverability
 probability against deficit age. Three features deserve narration because they are
 the operational content of ``interest.'' First, \emph{the plateau}: for 90 days
 the deficit is cheap to repay---this is the window in which proactive backfill
@@ -48,9 +57,9 @@ cliffs}: cost multiplies at dates that are \emph{knowable in advance}---retentio
 expirations are published policy, migrations are scheduled projects---which is why
 \cref{met:interest} replaced a fitted rate with the decay schedule itself: the
 schedule is actionable (extend retention, export before migration), a rate is not.
-Third, \emph{the saturation}: past the last non-human path, the deficit's cost is
-dominated by the write-off penalty; further aging changes little because the loss
-has effectively already occurred (\cref{prop:writeoff}).
+Third, \emph{the saturation}: past the last non-human path, the sound exhaustive policy's
+burden is dominated by its abstention penalty; further aging changes little because
+the physical loss boundary has already been crossed (\cref{prop:writeoff}).
 
 \subsection{Evidence Half-Life}
 \label{sec:interest-halflife}
@@ -75,7 +84,7 @@ or export setting, not a new system.
 
 The interest analysis yields field-testable hypotheses, taken up in
 \cref{sec:field}: \textbf{IH1}, measured reconstruction cost for comparable
-queries is a step function of evidence age, with steps aligned to the estate's
+queries has plateaus and cliffs aligned to the estate's
 documented retention and migration schedule; \textbf{IH2}, reconstructions that
 cross a personnel-departure boundary for the relevant service cost a multiple of
 those that do not~\cite{rigby2016}; \textbf{IH3}, organizations' realized

@@ -21,9 +21,10 @@ the \emph{record of how it came to be}. The distinction has consequences the fam
 tools cannot absorb: evidence debt is invisible to any inspection of the current
 system state (a flawless codebase can carry catastrophic evidence debt); its
 carrying cost is driven by third-party retention clocks and personnel turnover
-rather than by ongoing development friction; and it uniquely exhibits mandatory
-write-offs (\cref{prop:writeoff})---no amount of later diligence recovers a record
-that no longer exists anywhere, whereas any code can, at some price, be refactored.
+rather than by ongoing development friction; and it makes irrecoverability and
+mandatory write-off an explicit first-class boundary in its formal model
+(\cref{prop:writeoff})---no amount of later diligence recovers a record that no
+longer exists anywhere.
 
 Self-admitted technical debt~\cite{potdar2014} offers an instructive contrast:
 there, the record (a TODO comment) survives and the remediation is deferred; here,
@@ -36,16 +37,20 @@ The nearest family member deserves its own confrontation. Documentation debt nam
 missing or outdated \emph{descriptions of the system}: design docs, API references,
 runbooks~\cite{alves2016}. Evidence debt names missing \emph{records of events}:
 who changed what, when, why, under what authority, with what outcome.
-The two differ in referent (state versus history), in falsifiability
-(documentation can be regenerated from the system it describes; events cannot be
-re-observed once their traces are gone), and in decay mechanics (documentation
-rots by divergence from a living system~\cite{parnas1994,lehman1980}; evidence
-rots by destruction of sources and loss of joinability). The software-maintenance
+The distinction is one of primary referent and granularity rather than universal
+recoverability. Documentation debt primarily concerns missing or outdated
+descriptive artifacts about system state and design; evidence debt concerns
+time-indexed, event-level operational provenance and cross-store linkage needed to
+reconstruct how the current state came into existence. Design rationale and other
+documentation can also become irrecoverable. Their typical decay mechanics still
+differ: documentation often rots by divergence from a living
+system~\cite{parnas1994,lehman1980}, whereas operational evidence often rots by
+destruction of sources and loss of joinability. The software-maintenance
 tradition has long measured the cost of understanding systems whose rationale is
 lost~\cite{lientz1980,hunt2002}---``software archaeology'' is reconstruction
 effort by another name, applied to code rather than operations. A team with
-perfect current documentation and no change history has zero documentation debt
-and maximal evidence debt.
+perfect current documentation and no change history can have low documentation
+debt while carrying high evidence debt under a demanding schema and workload.
 
 \subsection{Observability and Logging}
 \label{sec:rel-obs}
@@ -129,7 +134,7 @@ scale; they are the natural execution venues for parts of \cref{sec:field}.
 Configuration drift and IaC research~\cite{rahman2019mapping,beetz2022,
 opengitops} concern divergence of running state from desired state; evidence debt
 concerns divergence of \emph{recorded history} from \emph{actual history}---a
-system with zero configuration drift can be maximally evidence-indebted about how
+system with zero configuration drift can carry high evidence debt about how
 it got there. Insecure IaC practice itself illustrates deficit creation at the
 source~\cite{rahman2019}. Supply-chain integrity work~\cite{torres2019,slsa}
 makes particular evidence chains cryptographically strong; it hardens what is
@@ -142,10 +147,12 @@ the quantity those obligations implicitly assume is being managed.
 
 \emph{Why is this not simply technical debt?} Different object (record of history
 versus state of system), different decay drivers (third-party clocks and turnover
-versus development friction), different terminal behavior (mandatory write-off
-versus indefinite refactorability), different observability (invisible to system
-inspection). \emph{Why not documentation debt?} State versus events;
-regenerability versus unrepeatable observation (\cref{sec:rel-doc}). \emph{Why
+versus development friction), explicit terminal behavior (mandatory write-off
+versus a first-class informational boundary beyond which the event cannot be
+re-observed), different observability (invisible to system
+inspection). \emph{Why not documentation debt?} Descriptive state/design artifacts
+versus time-indexed event provenance and cross-store linkage
+(\cref{sec:rel-doc}). \emph{Why
 not missing logs?} Logs are one store; the phenomenon is cross-store joinability,
 workload-relative cost, and decay dynamics; completeness of capture at one point
 neither implies nor is implied by low debt (\cref{sec:rel-obs}). \emph{Why not
@@ -165,7 +172,7 @@ property of the current system state that the existing debt family describes.
 \caption{Technical debt versus evidence debt. Both share the deferral structure
 (left): an expedient act now, a carrying cost, a repayment event. They diverge in
 every load-bearing property (right): object, visibility, interest driver, growth
-shape, terminal state, and repayment currency. The comparison is the condensed form
+shape, terminal evidence state, and policy-burden channels. The comparison is the condensed form
 of \cref{sec:novelty}.}
 \label{fig:tdvsed}
 \end{figure}

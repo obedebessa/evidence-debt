@@ -10,6 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 EXCLUDED_SUFFIXES = {".aux", ".bbl", ".blg", ".log", ".out", ".xdv"}
+RELEASE_PDF = Path("output/pdf/evidence-debt-v1.7.2.pdf")
 
 
 def included(path: Path) -> bool:
@@ -20,6 +21,8 @@ def included(path: Path) -> bool:
         and path.suffix not in EXCLUDED_SUFFIXES
         and path.name != "main.pdf"
         and path.name != "evidence-debt-paper.pdf"
+        and (rel.parts[:2] != ("output", "pdf") or rel == RELEASE_PDF)
+        and (not rel.parts or rel.parts[0] not in {"build", "originais", "qa", "release", "tmp"})
     )
 
 

@@ -1,20 +1,24 @@
 # Evidence Debt
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21842021.svg)](https://doi.org/10.5281/zenodo.21842021)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21841440.svg)](https://doi.org/10.5281/zenodo.21841440)
 
-Reproducibility package for the manuscript:
+Reproducibility package for the current development manuscript:
 
-> **Evidence Debt: Measuring the Accumulated Cost of Missing Operational
+> **Evidence Debt: Modeling the Deferred Reconstruction Burden of Missing Operational
 > Evidence in Cloud-Native Systems**  
 > Obede Bessa Rocha da Silva — Independent Researcher
 
+The revised title and v1.7.2 manuscript are archived at Zenodo under the
+version-specific DOI <https://doi.org/10.5281/zenodo.21845695>.
+
 The package contains the complete LaTeX source, a dependency-free simulation,
 canonical synthetic outputs, a frozen public-repository observation,
-programmatically generated tables, and a field protocol. Version 1.2.0 replaces
-the mutable-update sample with four `mergedAt` age cohorts, resolves issue
-tokens against GitHub, adds authorship/change-type strata and a seeded manual
-audit, and makes the artifact location explicit in the manuscript.
+programmatically generated tables, and a field protocol. Version 1.7.2 makes
+acceptance independent of ground truth, distinguishes theoretical $ED^*$ from
+policy-specific $ED_\rho$, adds an explicit complete-corpus reference arm to field
+drills, separates policy abstention from physical irrecoverability, and executes
+joint $\lambda/\pi$ sensitivity.
 
 ## Evidence boundary
 
@@ -30,7 +34,7 @@ temporal decay, production reconstruction cost, or industrial prevalence.
 |---|---|
 | `main.tex`, `sections/`, `figs/`, `refs.bib` | Complete manuscript source |
 | `code/experiment.py` | Synthetic generator, degradation arms, reconstruction, and aggregation |
-| `data/` | Canonical raw/aggregated results and generated LaTeX tables |
+| `data/` | Canonical raw/aggregated results, paired path diagnostics, three-channel penalty sensitivity, and generated LaTeX tables |
 | `empirical/` | Frozen Argo CD cohorts, strata, manual audit, generated counts, and collector |
 | `reviewer2-response.md` | Adversarial review and point-by-point disposition |
 | `scripts/verify_artifact.py` | Re-execution and deterministic-result verification |
@@ -47,7 +51,7 @@ Python 3.10 or newer is required; the study uses only the standard library.
 python3 code/experiment.py
 ```
 
-The run takes roughly 30 seconds on a contemporary laptop. Seeded scientific
+The run takes roughly 45 seconds on a contemporary laptop. Seeded scientific
 outputs are deterministic. The `secs` and `secs_sd` timing fields vary with
 the machine and load and are intentionally excluded from exact comparison.
 
@@ -58,7 +62,9 @@ python3 scripts/verify_artifact.py
 ```
 
 The verifier preserves the canonical outputs in memory, re-executes the study,
-and compares all non-timing fields plus the generated table. It also checks the
+and compares all non-timing fields plus the generated tables, including the
+exact S/W/N partition, six-value abstention-penalty sensitivity, joint $\lambda/\pi$ grid,
+and paired path-survival diagnostic. It also checks the
 frozen repository cohorts, strata, grammar tests, manual audit, CSVs, and LaTeX
 macros. Live
 recollection requires `gh auth login` and is intentionally separate because public
@@ -86,7 +92,8 @@ tectonic -X compile main.tex
 Citation metadata is provided in `CITATION.cff`; Zenodo deposit metadata is in
 `.zenodo.json`. The version-independent concept DOI is
 <https://doi.org/10.5281/zenodo.21841440>; version 1.2.0 is archived at
-<https://doi.org/10.5281/zenodo.21843147>.
+<https://doi.org/10.5281/zenodo.21843147>; version 1.7.2 is archived at
+<https://doi.org/10.5281/zenodo.21845695>.
 
 ## License
 

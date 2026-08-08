@@ -47,9 +47,9 @@
   table[x=p, y=irrec, col sep=comma] {data/series/dense_correlation_ids.csv};
 \addlegendentry{identifiability (key stripping)}
 
-% (d) computed ED
-\nextgroupplot[title={(d) computed $\ED$ (dense, declared workload)},
-  ylabel={units / configuration}, ymin=0, ymax=210, legend pos=north west]
+% (d) computed policy-specific ED
+\nextgroupplot[title={(d) computed $\ED_\rho$ (dense, declared workload)},
+  ylabel={units / configuration}, ymin=0, ymax=240, legend pos=north west]
 \addplot[serD, mark=diamond*, mark size=1.8pt, thick]
   table[x=p, y=ed, col sep=comma] {data/series/dense_combined.csv};
 \addlegendentry{all classes}

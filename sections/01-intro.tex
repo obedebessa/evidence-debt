@@ -32,16 +32,18 @@ mostly wrong in its details, and one of our contributions is to say precisely wh
 with its own structure: evidence gaps are created by identifiable practices at change
 time (\cref{sec:conditions}); they are syntactically observable as \emph{deficits}
 against a declared evidence schema (\cref{sec:definitions}); their economic meaning
-is the \emph{excess reconstruction cost} they impose on future queries against
+is the \emph{excess reconstruction burden}---effort, accepted wrong answers, and
+policy abstention---they impose on future queries against
 operational history (\cref{sec:model}); that cost grows over time through
 identifiable decay processes---log expiration, ticket deletion, personnel turnover,
-resource ephemerality, identifier loss---whose superposition produces step-shaped,
-not compound, growth (\cref{sec:interest}); and past a knowable boundary the history
+resource ephemerality, identifier loss---whose superposition produces plateau-and-cliff
+effort and abstention growth under sound exhaustive policies rather than compounding
+(\cref{sec:interest}); and past a knowable boundary the history
 becomes not expensive but \emph{irrecoverable}, a mandatory write-off with no
 financial analogue (\cref{sec:model-anti}).
 
-The central claim of the paper is stated by the commissioning question and treated as
-a hypothesis, not an assumption: \emph{organizations can defer evidence capture, but
+The central claim is treated as a falsifiable hypothesis rather than as an
+assumption: \emph{organizations can defer evidence capture, but
 they cannot eliminate the eventual cost of reconstructing missing operational
 history}. As stated, the claim is not even obviously true---redundancy across
 operational data sources might, in principle, make most deferred capture free,
@@ -49,10 +51,13 @@ because the history could be rebuilt from what other systems recorded anyway. Ou
 simulation study (\cref{sec:simulation}) shows that this objection has real force at
 low degradation rates (redundancy absorbs single-class link loss almost completely)
 and fails structurally at higher rates and under record deletion, where
-reconstruction collapses, and---more insidiously---that heuristic reconstruction
-substitutes \emph{plausible but false} history for missing history at rates that
-reach 48\% of accepted links in our dense-activity condition. Deferred capture is
-thus repaid in one of three currencies: effort, error, or loss.
+reconstruction collapses, and---more insidiously---that a policy accepting unique
+heuristic candidates still returns wrong history at rates reaching 30.3\% of
+accepted links under dense record deletion. Acceptance is decided from the corpus
+\emph{before} ground truth is consulted, so lucky rejected guesses cannot become
+supported answers after the fact. Deferred capture is thus repaid in one of three
+policy-burden currencies: effort, accepted error, or abstention; certified physical
+irrecoverability is measured separately.
 
 \subsection{Research Questions}
 \label{sec:rqs}
@@ -62,7 +67,8 @@ thus repaid in one of three currencies: effort, error, or loss.
 and measured as evidence debt?
 \item[RQ1:] What conditions create evidence debt?
 \item[RQ2:] How can evidence debt be quantified?
-\item[RQ3:] How does evidence debt influence later reconstruction effort?
+\item[RQ3:] How do evidence deficits alter the effort, accuracy, and confidence of
+later reconstruction?
 \item[RQ4:] Under which conditions does evidence debt become irrecoverable rather
 than merely expensive?
 \end{description}
@@ -83,11 +89,13 @@ of evidence deficit, evidence debt, principal, interest, liability, reconstructi
 cost, and irrecoverability, each anchored to an observable or measurable property and
 none defined in terms of the financial metaphor (\cref{sec:definitions}).
 \item \textbf{Formal model} (conceptual/analytic): evidence debt as expected excess
-reconstruction cost over a query workload; reconstruction as record-linkage
+effort, accepted-error, and abstention burden over a query workload, with certified
+irrecoverability as a distinct evidence state; reconstruction as record-linkage
 inference over a fragmented evidence corpus~\cite{fellegi1969,christen2012}; decay
 as per-source survival processes (\cref{sec:model}).
 \item \textbf{Anti-metaphor results} (analytic): propositions showing that
-evidence-debt ``interest'' is stochastic and step-shaped rather than compound, that
+reconstruction effort and abstention exposure under sound exhaustive policies are stochastic and plateau-and-cliff
+rather than compound, that
 the debt is bounded by mandatory write-offs, and that the constructs remain
 well-defined with the metaphor deleted (\cref{sec:model-anti,sec:disc-metaphor}).
 \item \textbf{Metric suite with rejection} (methodological): six candidate metrics
@@ -96,13 +104,13 @@ ill-defined under the model and replaced by hazard-based alternatives
 (\cref{sec:metrics}).
 \item \textbf{Executed simulation study} (empirical, synthetic): a reproducible
 evidence-degradation experiment---complete synthetic event chains; five evidence
-classes degraded at 1--40\%; a pairwise arm that gives the model's central
-interaction prediction a genuine chance to fail; removal and sensitivity arms
+classes degraded at 1--40\%; a pairwise coverage arm plus a paired link-level path
+census that tests the formal interaction premise directly; removal and sensitivity arms
 (redundancy off, heuristic-window stress, actor-assumption breakage, single-knob
 density sweep) that separate design-entailed demonstrations from falsifiable
-tests; twenty seeds; all code and data released, with results tables generated
+tests; twenty seeds; all code and data included in the accompanying artifact, with results tables generated
 programmatically from run outputs---including an end-to-end computation of
-$\ED(t)$ itself under a declared workload (\cref{sec:simulation}). The study
+$\ED_\rho(t)$ under a declared workload (\cref{sec:simulation}). The study
 validates that the constructs are computable and discriminating; it estimates no
 real-world magnitudes.
 \item \textbf{Public-repository observation} (empirical, bounded): a reproducible
@@ -114,7 +122,9 @@ controls remain discriminating; it does not measure intent adequacy, decay, debt
 or cost (\cref{sec:field}).
 \item \textbf{Field protocol} (methodological, not executed): instruments for a
 deficit census, reconstruction drills, and longitudinal decay observation in real
-organizations (\cref{sec:field}).
+organizations (\cref{sec:field}). The present article deliberately establishes the
+theoretical and synthetic foundation; it does not claim field calibration of ERC,
+FRR, AR, or consequence weights.
 \end{enumerate}
 
 Throughout, we separate established results (cited), analytic claims (proved within

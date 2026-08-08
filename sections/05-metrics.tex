@@ -7,7 +7,7 @@ cannot be justified---against three criteria: \emph{grounding}
 \emph{operationalizability} (can it be computed from obtainable data?), and
 \emph{incentive safety} (what does optimizing it do?). One candidate is rejected;
 one is accepted only with a replacement semantics; the remainder are adopted with
-stated scope. The foundational metrics (EDR-analogues, ERC proxies,
+stated scope. The foundational metrics (EDR analogues, ERC/FRR/AR reconstruction performance,
 irrecoverability, and $\ED$ itself) are computed concretely in
 \cref{sec:simulation}; the replacement decay-schedule semantics is computed in
 \cref{sec:interest}; the flow metric (M4) and the composite (M6) are defined for
@@ -24,41 +24,51 @@ of a single number. This is the suite's foundation metric---syntactic, cheap, an
 continuously monitorable.
 \end{metricdef}
 
-\begin{metricdef}[Evidence Reconstruction Cost, ERC]
+\begin{metricdef}[Evidence Reconstruction Performance, ERC, FRR, and AR]
 \label{met:erc}
-The measured cost (person-time, compute, calendar latency) of answering a defined
-query from the corpus, with declared confidence, per \cref{def:rec}; collected from
+The triplet comprising (i)~Evidence Reconstruction Cost (ERC): measured person-time,
+compute, or calendar latency for a defined query; and (ii)~False Reconstruction
+Rate (FRR): the fraction of accepted facts or links that diverge from independent
+ground truth; and (iii)~policy Abstention Rate (AR): the fraction for which $\rho$
+certifies no answer. All are measured under the same preregistered confidence and
+acceptance policy, per \cref{def:rec}, and collected from
 real reconstructions (incidents, audits) or standardized drills (\cref{sec:field});
-in simulation, proxied by algorithmic effort (candidate comparisons) and wall time.
-\emph{Verdict: adopted.} This is the phenomenon's direct observable; every other
-metric is ultimately calibrated against it.
+in simulation, effort is proxied by candidate comparisons and FRR is scored exactly.
+\emph{Verdict: adopted.} The triplet exposes the effort--accuracy--abstention
+tradeoff that ERC alone can hide. AR is not IRR: the former is a policy outcome,
+the latter a certified evidence state.
 \end{metricdef}
 
 \begin{metricdef}[Irrecoverability Ratio, IRR]
 \label{met:irr}
-The fraction of a defined query set (or of required links) irrecoverable at $t$ per
+The fraction of a defined query set (or of required links) irrecoverable at $t$
+within a published $(U,\gamma,\rho_{\mathrm{exh}})$ declaration, per
 \cref{def:irrec}. \emph{Verdict: adopted.} Decidable exactly in simulation;
 certifiable in the field by source-exhaustion protocols~\cite{nist80086}. Reported
 separately from cost metrics because it measures loss, not effort, and the two must
 never be averaged together (\cref{prop:writeoff}).
 \end{metricdef}
 
-\begin{metricdef}[Evidence Debt Growth Rate]
+\begin{metricdef}[Evidence Debt Inflow Rate, EDIR]
 \label{met:growth}
-The time-derivative of debt attributable to \emph{new} deficit creation:
+The inflow attributable to \emph{new} deficit creation per unit time:
 in practice, the deficit-census delta per unit time (new changes arriving with
-incomplete evidence), weighted by principal estimates. \emph{Verdict: adopted, with
-renaming discipline.} This measures the inflow (are we borrowing faster?), and must
+incomplete evidence), weighted by principal estimates. \emph{Verdict: adopted.}
+This measures the inflow (are we borrowing faster?), and must
 be reported separately from interest accrual on the existing stock; conflating the
-two makes remediation invisible.
+two makes remediation invisible. The net stock change is instead
+$d\ED/dt=\text{inflow}+\text{decay accrual}-\text{repayment}
+-\text{write-off realization}$.
 \end{metricdef}
 
 \begin{metricdef}[Evidence-Debt Interest Rate]
 \label{met:interest}
 \emph{Proposed as}: a scalar rate $\rho$ such that reconstruction cost grows as
 $e^{\rho\tau}$ or linearly at rate $\rho$. \emph{Verdict: rejected.}
-\Cref{prop:steps} shows the growth process is piecewise, discontinuous, and
-schedule-driven; any fitted scalar is an artifact of the observation window and
+\Cref{prop:steps} shows that growth in effort and abstention exposure under sound
+exhaustive policies is schedule-driven and generally
+piecewise, while error depends on discriminator degradation; neither supports a
+single invariant rate. Any fitted scalar is an artifact of the observation window and
 extrapolates falsely across retention cliffs. \emph{Replacement:} the
 \textbf{decay schedule} of the estate---the dated sequence of upcoming path-death
 events (retention expirations, migrations, projected turnover quantiles) with the
@@ -72,22 +82,25 @@ survival inventory (\cref{prop:reduction}) and are demonstrated in
 \begin{metricdef}[Evidence Debt Index, EDI]
 \label{met:edi}
 A composite scalar summarizing estate debt for management reporting: a weighted
-aggregation of EDR (by interrogative), projected interest from the decay schedule,
-and IRR, with published weights. \emph{Verdict: adopted with explicit estimator
+aggregation of EDR (by interrogative), calibrated ERC, false-reconstruction
+exposure (FRR priced by $\lambda_q$), abstention exposure (AR priced by $\pi_q$),
+projected decay from the decay schedule, and separately reported IRR, with published
+weights. \emph{Verdict: adopted with explicit estimator
 status and health warnings.} By \cref{sec:model-notformula}, any such composite is
-an \emph{estimator} of \cref{def:debt} under assumptions, not a definition of it;
-its weights encode the workload judgment $(w_q, \pi_q)$ and must be published for
+a policy-specific estimator related to $\ED_\rho$ under assumptions, not a
+definition of $\ED^{\star}$;
+its weights encode the workload judgment $(w_q, \lambda_q, \pi_q)$ and must be published for
 any comparison; and it inherits the gaming risks of all composites---optimizing EDI
 by weakening the schema $\Sch$ is the exact analogue of declaring bankruptcy
 solvent by redefining assets. EDI is defensible only alongside the disaggregated
-vector (EDR by class, decay schedule, IRR, measured ERC).
+vector (EDR by class, measured ERC/FRR/AR, decay schedule, and IRR).
 \end{metricdef}
 
 Two measurement caveats apply to the whole suite. \emph{Discoverability bias}: the
 census can only inspect stores it knows about; evidence in unknown stores is
 neither counted as present nor as deficit---field deployments should treat store
 discovery as part of the census. \emph{Confidence accounting}: reconstructed
-answers vary in confidence; ERC must be reported at stated confidence, or costs
-across reconstructions are not comparable. The simulation sidesteps both (closed
+answers vary in confidence; ERC and FRR must be reported under the same stated
+confidence and acceptance policy, or performance is not comparable. The simulation sidesteps both (closed
 world, exact scoring); the field protocol confronts them directly
 (\cref{sec:field}).

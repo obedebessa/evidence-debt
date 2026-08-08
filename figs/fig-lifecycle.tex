@@ -28,9 +28,9 @@
   \node[human, right=6mm of decay, minimum width=25mm] (query)
     {query arrives\\{\smlbl incident $\cdot$ audit $\cdot$ investigation}\\[-1pt]{\smlbl recovery $\cdot$ litigation}};
   \node[stage, below=3mm of query, minimum width=25mm] (rec)
-    {reconstruction\\{\smlbl effort (ERC)}\\[-1pt]{\smlbl error (false joins)}};
+    {policy burden\\{\smlbl effort $\cdot$ accepted error}\\[-1pt]{\smlbl abstention}};
   \node[brok, below=3mm of rec, minimum width=25mm] (wo)
-    {\textbf{write-off}\\{\smlbl irrecoverable facts}\\[-1pt]{\smlbl realized liability}};
+    {\textbf{physical irrecoverability}\\{\smlbl terminal evidence state}};
   \draw[flow] (query) -- (rec);
   \draw[bflow] (rec) -- (wo);
   \draw[eflow] (interest.east) to[out=0,in=190] (rec.west);

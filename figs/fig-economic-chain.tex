@@ -10,7 +10,7 @@
     {operational / audit cost\\{\smlbl declared rates and delay costs}};
   \node[brok, draw=black, fill=black!10, line width=0.8pt,
     double=black, double distance=0.45pt, below=of cost, minimum width=35mm] (exposure)
-    {financial exposure\\{\smlbl workload weight $w_q$; loss penalty $\pi_q$}};
+    {financial exposure\\{\smlbl $w_q$; error $\lambda_q$; abstention $\pi_q$}};
 
   \draw[flow] (deficit) -- (recon);
   \draw[flow] (recon) -- node[right,lbl]{measured ERC} (hours);
@@ -18,5 +18,5 @@
   \draw[flow] (cost) -- node[right,lbl]{frequency $\times$ consequence} (exposure);
   \draw[-{Triangle[open,length=1.8mm]}, black, densely dotted, very thick]
     (recon.west) to[out=190,in=170]
-    node[left,lbl,align=right]{irrecoverable\\write-off} (exposure.west);
+    node[left,lbl,align=right]{wrong answer /\\policy abstention} (exposure.west);
 \end{tikzpicture}

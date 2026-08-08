@@ -60,15 +60,28 @@ For a single required link $\ell$, let $\mathrm{paths}(\ell, t)$ be its survivin
 \emph{recovery paths} at $t$: the direct key, redundant keys (a digest recorded in
 two places), inferential linkage over attributes, and extra-corpus paths (asking the
 engineer who did it). Each path $r$ has expected effort $c_r(t)$ and error rate
-$\varepsilon_r(t)$. A rational reconstructor uses the cheapest acceptable path, so
-the link's expected cost is
+$\varepsilon_r(t)$. Under a fixed confidence-threshold policy, the effort-minimizing
+acceptable path gives the link cost
 \[
 c_\ell(t) \;=\; \min \{\, c_r(t) : r \in \mathrm{paths}(\ell, t),\;
 \varepsilon_r(t) \le \bar{\varepsilon} \,\},
 \]
 with $c_\ell(t)$ undefined---the link irrecoverable (\cref{def:irrec})---when the
-set is empty. Query cost aggregates over required links (with shared-work economies
-we do not model further), and $\ED(t)$ follows by \cref{def:debt}.
+set is empty. This path-level minimum is the cost of obtaining an acceptable answer,
+not the always-finite attempt cost $\ERC$ of \cref{def:rec}. For an irrecoverable
+link, $\ERC$ instead includes the finite search needed to exhaust the declared source
+set and certify failure; $\mathsf I_q$ records the resulting physical loss state.
+Policy abstention $\mathsf{Abst}_q$ can occur earlier and is not evidence that this
+exhaustion boundary has been reached. For recoverable
+links, query attempt cost aggregates the selected path costs (with shared-work
+economies we do not model further). A returned link inconsistent with ground truth
+sets $\Err_q$; the $\lambda_q$ term of \cref{def:debt} is therefore what makes
+false reconstruction part of the debt quantity rather than merely a diagnostic
+beside it. More generally, $B_q^{\star}$ in \cref{def:debt} minimizes the joint
+effort, accepted-error, and abstention burden over admissible policies; it need
+not choose the effort-minimizing path when a more expensive path reduces expected
+consequence loss. $\ED^{\star}(t)$ compares optimal total burden with the ideal
+corpus; $\ED_\rho(t)$ makes the same comparison for a fixed policy.
 
 \subsection{Why Not $ED = f(M, F, R, U, C)$}
 \label{sec:model-notformula}
@@ -117,13 +130,15 @@ are exercised in \cref{sec:simulation}, which distinguishes design-entailed
 demonstrations from the falsifiable tests (notably the pairwise interaction test
 of \cref{prop:superadd}).
 
-\begin{proposition}[Redundancy plateau]
+\begin{proposition}[Effort plateau under a fixed acceptance policy]
 \label{prop:plateau}
 If a link retains at least one surviving path whose cost equals the original
 cheapest cost, its expected reconstruction cost is unchanged by the loss of any
 number of other paths. Consequently, estate-level cost as a function of a
 degradation rate is flat while redundancy lasts and departs from flatness only as
-cheapest paths begin to be destroyed.
+cheapest paths begin to be destroyed. No plateau claim follows for total burden
+unless a surviving path also preserves the error and consequence profile of the
+previously burden-optimal policy.
 \end{proposition}
 \begin{proof}
 Immediate from $c_\ell = \min$ over surviving paths: the minimum is invariant to
@@ -134,68 +149,97 @@ removal of non-minimal elements.
 \label{prop:superadd}
 Let two degradation classes each destroy a disjoint subset of paths such that
 neither alone destroys any link's full path set. Then each alone adds bounded
-effort cost and zero irrecoverability, while their combination can produce
-irrecoverability---an effect strictly greater than the sum of marginal effects.
+effort cost and zero irrecoverability, while their combination can make the link
+irrecoverable. The irrecoverability indicator is therefore strictly superadditive
+for that link; no corresponding claim about the effort component or total $\ED$
+follows without additional cost inequalities.
 \end{proposition}
 \begin{proof}
-By construction: irrecoverability requires the surviving-path set to be empty
-(\cref{def:irrec}); if class $A$ leaves paths $P \setminus A$ nonempty and class
-$B$ leaves $P \setminus B$ nonempty, but $A \cup B \supseteq P$, the combined
-effect (undefined cost) exceeds any finite sum of the individual effects.
+By construction, irrecoverability requires the surviving-path set to be empty
+(\cref{def:irrec}). If class $A$ leaves $P \setminus A$ nonempty and class $B$
+leaves $P \setminus B$ nonempty, but $A \cup B \supseteq P$, then
+$\Irr_\ell(A)=\Irr_\ell(B)=0$ and $\Irr_\ell(A\cup B)=1$. Hence $1>0+0$.
+For a sound exhaustive policy the combination also forces abstention. Under another
+policy, physical irrecoverability may coexist with $W$ or $N$. In every case the
+physical state is distinct from the policy decision and introduces no undefined or
+infinite reconstruction cost.
 \end{proof}
 
-\begin{proposition}[Interest is step-shaped, not compound]
+\begin{proposition}[Effort plateau and irrecoverability cliff]
 \label{prop:steps}
-Under the survival forms of \cref{sec:model-decay}, the expected cost
-$\mathbb{E}[c_\ell(t)]$ of a fixed deficit is a piecewise structure: constant while
-the cheapest surviving path persists, jumping at retention boundaries and
+Under the survival forms of \cref{sec:model-decay}, the expected finite
+reconstruction-attempt cost of a fixed deficit is piecewise: constant
+while the cheapest surviving path persists, jumping at retention boundaries and
 organizational events, with smooth growth only where a hazard-governed human path
-is the cheapest survivor. In particular, there is no constant $\rho$ such that
-cost grows as $e^{\rho \tau}$ in general: a compound ``interest rate'' is not a
-property of the process.
+is the cheapest survivor. When the last answer-producing path dies, the remaining
+cost is the finite effort of certifying irrecoverability. Under a sound exhaustive
+policy, abstention then switches on and coincides with the physical loss state;
+under a conservative policy it may switch on earlier, while an unsound or
+aggressive policy may instead return $W$. The error and
+abstention components have the same plateau-and-cliff form only when path error and
+the acceptance rule remain constant between degradation events; in general they
+change as discriminators degrade. Thus no constant $\rho$ makes total burden grow as
+$e^{\rho \tau}$ in general.
 \end{proposition}
 \begin{proof}
 Piecewise-constancy between path deaths follows from \cref{prop:plateau}; jumps at
 step/event survival boundaries follow from minimization passing to the next
-survivor; the only smooth component is the expectation over hazard-distributed
-death times of a human path, which yields growth bounded by the next path's cost,
-not unbounded compounding.
+survivor, or to finite source-exhaustion effort when none remains; the only smooth
+component is the expectation over hazard-distributed death times of a human path,
+which yields growth bounded by the next attempt state's cost, not unbounded
+compounding.
+Error burden follows the same argument only under the stated between-event
+constant-error assumption; otherwise its shape is determined by discriminator
+degradation.
 \end{proof}
 
-\begin{proposition}[Bounded debt; mandatory write-off]
+\begin{proposition}[Bounded burden; mandatory irrecoverability boundary]
 \label{prop:writeoff}
-With finite penalty weights $\pi_q$, $\ED(t)$ is bounded above by
-$\sum_q w_q(\bar{C}_q + \pi_q)$, where $\bar{C}_q$ is the cost of $q$'s most
-expensive recoverable state. Once a link is irrecoverable, further decay does not
-increase its contribution: the debt does not grow without bound; it converts to a
-realized loss cap. Financial debt has no analogous mandatory write-off imposed by
-the world rather than chosen by a creditor.
+With finite penalty weights $\lambda_q$ and $\pi_q$, $\ED^{\star}(t)$ (and any
+finite policy-specific $\ED_\rho(t)$) is bounded above by
+$\sum_q w_q(\bar{C}_q + \max\{\lambda_q,\pi_q\})$, where $\bar{C}_q$ is the cost of $q$'s most
+expensive reconstruction-attempt state. Once a link is irrecoverable, further decay
+cannot restore an answer-producing path; the finite certification effort remains
+bounded by $\bar{C}_q$. At physical irrecoverability, a sound exhaustive policy must
+abstain; another policy may incur accepted-error burden instead. In all cases the
+burden remains finite and does not grow without bound; it reaches a realized loss
+cap. Financial debt has no
+analogous physical write-off boundary imposed by the world rather than chosen by a
+creditor.
 \end{proposition}
 \begin{proof}
-Directly from \cref{def:debt}: each query's contribution is at most its recoverable
-cost bound before irrecoverability and exactly $w_q \pi_q$ after.
+Directly from \cref{def:debt}: reconstruction-attempt cost is finite by
+\cref{def:rec} and bounded here by $\bar{C}_q$, while each probability difference
+is at most one. Each query's contribution is therefore at most
+$w_q(\bar{C}_q+\max\{\lambda_q,\pi_q\})$, because the default policy's accepted-
+error and abstention outcomes are mutually exclusive.
 \end{proof}
 
 \label{sec:model-anti}
 \Cref{prop:steps,prop:writeoff} are the model's verdict on the metaphor, obtained
 before any experiment: evidence debt has principal and carrying cost, but its
-``interest'' is stochastic, discontinuous, and driven by third parties' retention
-clocks rather than by any contracted rate, and its growth terminates in write-off
-rather than compounding indefinitely. \Cref{sec:disc-metaphor} completes the
+effort and abstention exposure under sound exhaustive policies are stochastic,
+discontinuous, and driven by third
+parties' retention clocks rather than by any contracted rate; error exposure can
+also drift continuously as discriminators weaken. Answerability terminates at a
+physical write-off boundary rather than compounding indefinitely.
+\Cref{sec:disc-metaphor} completes the
 argument that the constructs stand without the metaphor.
 
 \begin{proposition}[Measurement reduction]
 \label{prop:reduction}
-$\ED(t)$ is a function of exactly four inputs: (i)~the deficit census (observable,
-\cref{def:deficit}); (ii)~the path inventory with per-path cost and error
-calibrations; (iii)~the survival schedule of paths (observable from retention
-policies, HR data, and migration calendars); and (iv)~the declared workload
-$(w_q, \pi_q)$. No other quantity enters \cref{def:debt}.
+$\ED^{\star}(t)$ is determined by four input families: (i)~the deficit/corpus census
+(observable, \cref{def:deficit}); (ii)~the reconstruction protocol family,
+including admissible policies, confidence and finite-exhaustion rules, and
+per-path effort/error calibrations; (iii)~the survival schedule of paths
+(observable from retention policies, HR data, and migration calendars); and
+(iv)~the declared workload and consequence weights $(w_q,\lambda_q,\pi_q)$.
 \end{proposition}
 \begin{proof}
 By inspection of \cref{def:debt} through \cref{sec:model-linkage,sec:model-decay}:
-the expectation is over path survival (iii) applied to the path inventory (ii)
-for the links the census (i) marks deficient, aggregated under (iv).
+the expectation is over path survival (iii), applied through the declared
+reconstruction protocols (ii) to the corpus described by (i), and aggregated
+under (iv).
 \end{proof}
 
 Two honesty notes bound what \cref{prop:reduction} claims. First, it is an
@@ -203,11 +247,11 @@ input-enumeration result, not a feasibility result: input (ii)---per-path cost a
 error calibrations for future queries---is the empirically hard part, obtainable
 only by reconstruction drills (\cref{sec:field}) and bounded, not supplied, by
 linkage theory~\cite{fellegi1969}. Second, inputs (i) and (iv) are relative to
-declared governance choices ($\Sch$; $w_q, \pi_q$), so $\ED$ values are
+declared governance choices ($\Sch$; $w_q, \lambda_q, \pi_q$), so $\ED$ values are
 comparable across estates only under shared reference declarations
 (\cref{sec:metrics,sec:disc-relativity}). RQ2 is therefore answered as:
 \emph{quantifiable relative to declared governance inputs, with the empirical
 burden concentrated in cost calibration}---an affirmative with stated conditions,
 not an unconditional one. \Cref{sec:metrics} turns the inputs into named metrics;
-\cref{sec:sim-workload} instantiates the entire chain, computing $\ED(t)$ end to end in
+\cref{sec:sim-workload} instantiates the entire chain, computing $\ED_\rho(t)$ end to end in
 a closed world where every input is known.
