@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this artifact, please cite it as below."
+message: "If you use the research findings, cite the manuscript below; cite this software record when referring specifically to the reproducibility package."
 type: software
 title: "Evidence Debt: Reproducibility Package"
 version: 1.7.2
@@ -8,6 +8,7 @@ doi: "10.5281/zenodo.21845695"
 authors:
   - family-names: "Bessa Rocha da Silva"
     given-names: "Obede"
+    orcid: "https://orcid.org/0009-0001-0787-5710"
     affiliation: "Independent Researcher, Clermont, Florida, United States"
 license: MIT
 repository-code: "https://github.com/obedebessa/evidence-debt"
@@ -27,3 +28,15 @@ keywords:
   - "record linkage"
   - "cloud-native systems"
   - "reproducibility"
+preferred-citation:
+  type: report
+  title: "Evidence Debt: Modeling the Deferred Reconstruction Burden of Missing Operational Evidence in Cloud-Native Systems"
+  authors:
+    - family-names: "Bessa Rocha da Silva"
+      given-names: "Obede"
+      orcid: "https://orcid.org/0009-0001-0787-5710"
+  year: 2026
+  month: 8
+  version: "1.7.2"
+  doi: "10.5281/zenodo.21845695"
+  url: "https://doi.org/10.5281/zenodo.21845695"
