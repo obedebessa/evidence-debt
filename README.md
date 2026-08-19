@@ -12,6 +12,37 @@ Reproducibility package for the current development manuscript:
 The revised title and v1.7.2 manuscript are archived at Zenodo under the
 version-specific DOI <https://doi.org/10.5281/zenodo.21845695>.
 
+## Read and cite the paper
+
+- [Read the manuscript (PDF)](output/pdf/evidence-debt-v1.7.2.pdf)
+- [Open the permanent Zenodo record](https://doi.org/10.5281/zenodo.21845695)
+- Use GitHub's **Cite this repository** control for automatically generated
+  citation formats. The preferred citation in `CITATION.cff` points to the
+  manuscript; cite the software package separately only when referring to its
+  code, data, or reproducibility materials.
+
+**APA**
+
+> Bessa Rocha da Silva, O. (2026). *Evidence Debt: Modeling the Deferred
+> Reconstruction Burden of Missing Operational Evidence in Cloud-Native
+> Systems* (Version 1.7.2) [Preprint]. Zenodo.
+> https://doi.org/10.5281/zenodo.21845695
+
+**BibTeX**
+
+```bibtex
+@techreport{bessa_rocha_da_silva_evidence_debt_2026,
+  author  = {Obede Bessa Rocha da Silva},
+  title   = {Evidence Debt: Modeling the Deferred Reconstruction Burden of Missing Operational Evidence in Cloud-Native Systems},
+  year    = {2026},
+  month   = aug,
+  version = {1.7.2},
+  doi     = {10.5281/zenodo.21845695},
+  url     = {https://doi.org/10.5281/zenodo.21845695},
+  note    = {Preprint}
+}
+```
+
 The package contains the complete LaTeX source, a dependency-free simulation,
 canonical synthetic outputs, a frozen public-repository observation,
 programmatically generated tables, and a field protocol. Version 1.7.2 makes
